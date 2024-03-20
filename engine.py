@@ -13,10 +13,10 @@ RED = (255, 0, 0)
 PURPLE = (160, 32, 240)
 
 obstacles = set() 
-target = Static_Object(200, 200, 200, 10)
-agent = Robot(20, 20)
-obstacle_1 = Static_Object(70, 50, 40, 400)
-obstacle_2 = Static_Object(120, 140, 80, 5)
+target = Static_Object(200, 200, 200, 10, 0.05)
+agent = Robot(20, 20, 0.05)
+obstacle_1 = Static_Object(70, 50, 40, 400, 80)
+obstacle_2 = Static_Object(120, 140, 80, 5, 80)
 obstacles.add(obstacle_1)
 obstacles.add(obstacle_2)
 
@@ -54,7 +54,7 @@ def gradient_descent(robot, target, obstacle_set):
         robot.vektor = robot.vektor[0] + normalized_total_force[0] * STEP_SIZE, robot.vektor[1] + normalized_total_force[1] * STEP_SIZE
         draw_robot(robot, BLACK, 5)
         pygame.display.flip()
-        clock.tick(60)
+        clock.tick(30)
 
     
 gradient_descent(agent, target, obstacles)
