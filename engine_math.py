@@ -62,4 +62,3 @@ def calculate_single_repulsion_force(robot, obstacle):
     coefficients = obstacle.attraction * (1/distance - 1/obstacle.radius_of_influence) * 1/(distance ** 2)
     return (normalized_vektor[0] * coefficients, normalized_vektor[1] * coefficients)
 
-

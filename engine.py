@@ -14,17 +14,16 @@ PURPLE = (160, 32, 240)
 
 obstacles = set() 
 target = Static_Object(200, 200, 200, 10, 0.05)
-agent = Robot(20, 20, 0.05)
+agent = Robot(20, 20)
 obstacle_1 = Static_Object(70, 50, 40, 400, 80)
 obstacle_2 = Static_Object(120, 140, 80, 5, 80)
 obstacles.add(obstacle_1)
 obstacles.add(obstacle_2)
 
-pygame.init()
+pygame.init()  
 pygame.display.set_caption("Gradient Descent")
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 screen.fill(WHITE)
-pygame.display.update()
 clock = pygame.time.Clock()
 
 def draw_robot(robot, color, radius): 
@@ -34,18 +33,19 @@ def draw_obstacles():
     for entry in obstacles: 
         pygame.draw.circle(screen, PURPLE, (int(entry.vektor[0]), int(entry.vektor[1])), 7)
 
-
 draw_robot(agent, BLACK, 5)
 draw_robot(target, RED, 10)
 draw_obstacles()
 
-
 pygame.display.flip()
 
-
 def gradient_descent(robot, target, obstacle_set): 
+    done = False
     iteration = 0 
-    while True: 
+    while not done: 
+        for event in pygame.event.get():  
+            if event.type == pygame.QUIT:  
+                done = True  
         if norm_subtraction(robot.vektor, target.vektor) < DELTA: 
             break  
         total_force = calculate_total_force(robot,target, obstacle_set)
@@ -56,7 +56,4 @@ def gradient_descent(robot, target, obstacle_set):
         pygame.display.flip()
         clock.tick(30)
 
-    
 gradient_descent(agent, target, obstacles)
-
-    
