@@ -13,10 +13,10 @@ RED = (255, 0, 0)
 PURPLE = (160, 32, 240)
 
 obstacles = set() 
-target = Static_Object(200, 200, 200, 10, 0.05)
+target = Static_Object(200, 200, 200, 0.05)
 agent = Robot(20, 20)
-obstacle_1 = Static_Object(70, 50, 40, 400, 80)
-obstacle_2 = Static_Object(120, 140, 80, 5, 80)
+obstacle_1 = Static_Object(70, 50, 40,  80)
+obstacle_2 = Static_Object(120, 140, 80, 80)
 obstacles.add(obstacle_1)
 obstacles.add(obstacle_2)
 
