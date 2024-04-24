@@ -62,9 +62,9 @@ def visualization_heat_map(alpha, temp):
     visualization_robot = Robot(0,0)
     max = -1
     position = None
-    for x in range(460): 
+    for x in range(SCREEN_WIDTH): 
         inner_array = []
-        for y in range(460): 
+        for y in range(SCREEN_HEIGHT): 
             visualization_robot.vektor = x,y
             value = calculate_potential_field_value_temperature(target, obstacles, alpha, temp, visualization_robot ) 
             inner_array.append(value)
