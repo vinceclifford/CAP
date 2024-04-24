@@ -85,6 +85,8 @@ def heat_map_visualization():
             value = calculate_potential_field_value_temperature(target, obstacles, 1, 1, visualization_robot ) 
             inner_array.append(value)
         outer_array.append(inner_array)
+        
+    outer_array = np.transpose(outer_array)
 
     print(max)
     print(position)
