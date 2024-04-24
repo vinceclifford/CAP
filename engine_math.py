@@ -119,6 +119,7 @@ def calculate_single_repulsion_temperature(robot, obstacle, alpha, temp):
     distance_by_alptemp = distance_val / (alpha * temp)
     
     difference = 50 * math.exp(-0.001 * (distance_by_alptemp ** 2))
+    #coefficients = obstacle.attraction * (1/distance_by_alptemp - 1/obstacle.radius_of_influence) * 1/(distance_by_alptemp ** 2)
     return difference * 0.5 * obstacle.attraction
 
 
