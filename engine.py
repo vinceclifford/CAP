@@ -6,6 +6,7 @@ from classes.robot import Robot
 from classes.static_objects import Static_Object
 from engine_math import norm, calculate_total_force, calculate_potential_field_value, calculate_potential_field_value_temperature 
 from field_with_dijkstra import pathplanning_with_potential_field_and_dijkstra
+from environments.environment_1 import obstacles
 
 SCREEN_WIDTH = 800
 DELTA = 5
@@ -16,27 +17,8 @@ BLACK = (0,0,0)
 RED = (255, 0, 0)
 PURPLE = (160, 32, 240)
 
-obstacles = set() 
 target = Static_Object(400, 400, 30, 3)
 agent = Robot(45, 45)
-obstacle_1 = Static_Object(200, 200, 80, 3)
-obstacle_2 = Static_Object(120, 140, 30, 3)
-obstacle_3 = Static_Object(170, 120, 50, 2)
-obstacle_4 = Static_Object(300, 300, 70, 3)
-obstacle_5 = Static_Object(270, 300, 40, 2.5)
-obstacle_6 = Static_Object(400, 375, 75, 3)
-obstacle_7 = Static_Object(100, 277, 50, 3)
-obstacle_8 = Static_Object(420, 430, 40, 3)
-obstacle_9 = Static_Object(400, 60, 70, 4)
-obstacles.add(obstacle_1)
-obstacles.add(obstacle_2)
-obstacles.add(obstacle_3)
-obstacles.add(obstacle_4)
-obstacles.add(obstacle_5)
-obstacles.add(obstacle_6)
-obstacles.add(obstacle_7)
-obstacles.add(obstacle_8)
-obstacles.add(obstacle_9)
 
 pygame.init()  
 pygame.display.set_caption("Gradient Descent")
