@@ -4,9 +4,11 @@ import matplotlib.pyplot as plt
 import seaborn as sns 
 from classes.robot import Robot
 from classes.static_objects import Static_Object
-from engine_math import norm, calculate_total_force, calculate_potential_field_value, calculate_potential_field_value_temperature 
+from engine_math import norm, calculate_total_force, calculate_potential_field_value_temperature 
 from field_with_dijkstra import pathplanning_with_potential_field_and_dijkstra
+from functools import partial
 from environments.environment_1 import obstacles
+
 
 SCREEN_WIDTH = 800
 DELTA = 5
@@ -55,16 +57,16 @@ def gradient_descent(robot, target, obstacle_set):
         pygame.display.flip()
         clock.tick(120)
 
-def heat_map_visualization(): 
+def visualization_heat_map(alpha, temp): 
     outer_array = []
     visualization_robot = Robot(0,0)
     max = -1
     position = None
-    for x in range(SCREEN_WIDTH): 
+    for x in range(460): 
         inner_array = []
-        for y in range(SCREEN_HEIGHT): 
+        for y in range(460): 
             visualization_robot.vektor = x,y
-            value = calculate_potential_field_value_temperature(target, obstacles, 1, 1, visualization_robot ) 
+            value = calculate_potential_field_value_temperature(target, obstacles, alpha, temp, visualization_robot ) 
             inner_array.append(value)
         outer_array.append(inner_array)
         
@@ -76,19 +78,49 @@ def heat_map_visualization():
     data = np.array(outer_array)
     sns.heatmap(data, cmap='viridis')
     plt.title('Heatmap of Robot')
-    plt.xlabel('X Axis Label')
-    plt.ylabel('Y Axis Label')
+    plt.xlabel('x coordinate')
+    plt.ylabel('y coordinate')
 
     plt.show()
+    
+
+def visualizaion_3d_function(alpha, temp):
+    curried = partial(calculate_potential_field_value_temperature, target, obstacles, alpha, temp)
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    ax.set_xlim(SCREEN_WIDTH, 0)
+
+    x = np.arange(0, SCREEN_WIDTH , 1)
+    y = np.arange(0, SCREEN_HEIGHT, 1 )
+    X, Y = np.meshgrid(x,y)
+    zs = np.array([curried(Robot(x,y)) for x,y in zip(np.ravel(X), np.ravel(Y))])
+    print(zs)
+    Z = zs.reshape(X.shape)
+    surf = ax.plot_surface(X, Y, Z, cmap='viridis')
+    
+    colorbar = fig.colorbar(surf, ax=ax, shrink=0.7)
+    colorbar.outline.set_visible(False)
+
+    ax.set_xlabel('x coordinate')
+    ax.set_ylabel('y coordinate')
+    ax.set_zlabel('value of potential field')
+    plt.title('Value function of Robot')
+
+
+    plt.show()  
+    
     
 def heat_field_with_dijkstra(): 
     path_points = pathplanning_with_potential_field_and_dijkstra(agent, target, obstacles, 1, 1, SCREEN_WIDTH, SCREEN_HEIGHT)
     pygame.draw.lines(screen, BLACK, False, path_points, 2)
     pygame.display.flip()
 
+
 def main(): 
+    #visualizaion_3d_function(1,1)
     heat_field_with_dijkstra()
-    heat_map_visualization()
+    visualization_heat_map(1,1)
+    
     while True: 
         done = False
         iteration = 0 

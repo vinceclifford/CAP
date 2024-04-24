@@ -3,6 +3,7 @@ import sys
 import copy 
 from scipy.optimize import minimize
 from functools import partial 
+from classes.robot import Robot
 
 SIGMA_ZERO = 100    
 DELTA_FOR_ZERO = 1

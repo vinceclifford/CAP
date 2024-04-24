@@ -6,7 +6,6 @@ from classes.robot import Robot
 from engine_math import calculate_potential_field_value_temperature, calculate_potential_field_value
 
 
-
 obstacles = set() 
 agent = Robot(-50, 0)
 obstacle_1 = Static_Object(50, 0, 100, 3)
