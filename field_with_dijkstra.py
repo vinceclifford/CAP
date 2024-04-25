@@ -1,9 +1,8 @@
 from classes.node import Node 
 from classes.robot import Robot
-from classes.static_objects import Static_Object
+from classes.static_circle import Static_Circle
 from engine_math import calculate_potential_field_value_temperature
 from neighborhood import dijkstra
-
 
 def pathplanning_with_potential_field_and_dijkstra(robot, target, obstacles, alpha, temp, width, height): 
     print('We are about to construct the graph')
@@ -13,7 +12,7 @@ def pathplanning_with_potential_field_and_dijkstra(robot, target, obstacles, alp
     return path 
 
 
-def construct_entire_graph(robot, target : Static_Object, obstacles, width, height ,alpha=1, temp=1): 
+def construct_entire_graph(robot, target : Static_Circle, obstacles, width, height ,alpha=1, temp=1): 
     map = {}
     #directions = [(0, 1), (0, -1), (1, 0), (-1, 0), (1, 1), (-1, 1), (1, -1), (-1, -1)]
     directions = [(0, 1), (0, -1), (1, 0), (-1, 0)]
@@ -43,6 +42,4 @@ def construct_entire_graph(robot, target : Static_Object, obstacles, width, heig
                 
     print('We added the edges to the graph and are now finished with constructing the entire graph!')
 
-    return map[robot.vektor], map[target.vektor]
-            
-            
+    return map[robot.vektor], map[target.vektor]    

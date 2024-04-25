@@ -3,12 +3,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns 
 from classes.robot import Robot
-from classes.static_objects import Static_Object
+from classes.static_circle import Static_Circle
 from engine_math import norm, calculate_total_force, calculate_potential_field_value_temperature 
 from field_with_dijkstra import pathplanning_with_potential_field_and_dijkstra
 from functools import partial
 from environments.environment_1 import obstacles
-
 
 SCREEN_WIDTH = 800
 DELTA = 5
@@ -19,7 +18,7 @@ BLACK = (0,0,0)
 RED = (255, 0, 0)
 PURPLE = (160, 32, 240)
 
-target = Static_Object(400, 400, 30, 3)
+target = Static_Circle(400, 400, 30, 3)
 agent = Robot(45, 45)
 
 pygame.init()  
@@ -31,9 +30,11 @@ clock = pygame.time.Clock()
 def draw_robot(robot, color, radius): 
     pygame.draw.circle(screen, color, (int(robot.vektor[0]), int(robot.vektor[1])), radius)
 
+
 def draw_obstacles(): 
     for entry in obstacles: 
         pygame.draw.circle(screen, PURPLE, (int(entry.vektor[0]), int(entry.vektor[1])), 7)
+
 
 draw_robot(agent, BLACK, 5)
 draw_robot(target, RED, 10)
@@ -56,6 +57,7 @@ def gradient_descent(robot, target, obstacle_set):
         draw_robot(robot, BLACK, 5)
         pygame.display.flip()
         clock.tick(120)
+
 
 def visualization_heat_map(alpha, temp): 
     outer_array = []
@@ -117,7 +119,7 @@ def heat_field_with_dijkstra():
 
 
 def main(): 
-    #visualizaion_3d_function(1,1)
+    visualizaion_3d_function(1,1)
     heat_field_with_dijkstra()
     visualization_heat_map(1,1)
     

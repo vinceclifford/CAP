@@ -3,15 +3,16 @@ import sys
 import copy 
 from scipy.optimize import minimize
 from functools import partial 
-from classes.robot import Robot
 
 SIGMA_ZERO = 100    
 DELTA_FOR_ZERO = 1
+
 def norm(vektor): 
     sum = 0 
     for entry in vektor: 
         sum += (entry ** 2)
     return math.sqrt(sum)
+
 
 def preprocessing(target, obstacles, width, height): 
     temp = sys.maxsize
@@ -24,8 +25,7 @@ def preprocessing(target, obstacles, width, height):
        next_minimization_point = minimize_temp(target, obstacles, alpha, temp, width, height)
        if distance(minimization_point, next_minimization_point) < tolerance: 
            return minimization_point
-       minimization_point = next_minimization_point
-              
+       minimization_point = next_minimization_point        
 
 
 def minimize_temp(target, obstacles, alpha, temp, width, height): 
@@ -42,12 +42,12 @@ def minimize_temp(target, obstacles, alpha, temp, width, height):
     return result.x
 
 
-
 def calculate_potential_field_value(robot, target, obstacles): 
     sum_of_rep = 0
     for obstacle in obstacles: 
         sum_of_rep += calculate_single_repulsion(robot, obstacle)
     return sum_of_rep + calculate_attraction(robot, target) 
+
 
 def calculate_potential_field_value_temperature(target, obstacles, alpha, temp, robot): 
     sum_of_rep = 0 
@@ -55,9 +55,11 @@ def calculate_potential_field_value_temperature(target, obstacles, alpha, temp, 
         sum_of_rep += calculate_single_repulsion_temperature(robot, obstacle, alpha, temp)
     return sum_of_rep + calculate_attraction_temperature(robot, target, alpha, temp) 
 
+
 def distance(first_vektor, second_vektor): 
     intermediate = first_vektor[0] - second_vektor[0], first_vektor[1] - second_vektor[1]
     return norm(intermediate)
+
 
 def calculate_total_force(robot, target, obstacle_set): 
     sum_repulsion_force = (0, 0)
@@ -69,10 +71,12 @@ def calculate_total_force(robot, target, obstacle_set):
     print(f"{result[0]}, {result[1]}")
     return result
 
+
 def calculate_attraction(robot, target): 
     if (distance(robot.vektor, target.vektor)) <= SIGMA_ZERO: 
         return 0.5 * target.attraction * ((distance(robot.vektor, target.vektor) / 100) ** 2)
     return target.attraction * distance(robot.vektor, target.vektor)/100 * SIGMA_ZERO - (0.5 * target.attraction * SIGMA_ZERO * SIGMA_ZERO) / 100
+
 
 def calculate_attraction_temperature(robot, target, alpha, temp):
     distance_val = distance(robot.vektor, target.vektor) / 100
@@ -99,6 +103,7 @@ def calculate_attraction_force(robot, target):
     
     return ((x_result * SIGMA_ZERO) / dividend, (y_result * SIGMA_ZERO) / dividend)
 
+
 def calculate_single_repulsion(robot, obstacle): 
     if distance(robot.vektor, obstacle.vektor) > obstacle.radius_of_influence: 
         return 0.0
@@ -124,7 +129,6 @@ def calculate_single_repulsion_temperature(robot, obstacle, alpha, temp):
     return difference * 0.5 * obstacle.attraction
 
 
-
 def calculate_single_repulsion_force(robot, obstacle): 
     diff = distance(robot.vektor, obstacle.vektor)
     # If robot is far enough from obstacle it should not receive any force by it 
@@ -136,4 +140,3 @@ def calculate_single_repulsion_force(robot, obstacle):
     normalized_vektor = (difference_of_vektors[0] / distance, difference_of_vektors[1] / distance)
     coefficients = obstacle.attraction * (1/distance - 1/obstacle.radius_of_influence) * 1/(distance ** 2)
     return (normalized_vektor[0] * coefficients, normalized_vektor[1] * coefficients)
-
