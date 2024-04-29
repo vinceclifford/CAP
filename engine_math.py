@@ -99,7 +99,7 @@ def calculate_attraction_force(robot, target):
 
 
 def calculate_single_repulsion(robot, obstacle, alpha=1, temp=1): 
-    distance_val = distance(robot.vektor, obstacle.vektor) 
+    distance_val = obstacle.distance(robot.vektor[0], robot.vektor[1])
     #if (distance_val / temp) > obstacle.radius_of_influence: 
      #   return 0.0
     if distance_val == 0: 

@@ -4,10 +4,11 @@ import matplotlib.pyplot as plt
 import seaborn as sns 
 from classes.robot import Robot
 from classes.static_circle import Static_Circle
+from classes.static_polygon import Static_Polygon
 from engine_math import norm, calculate_total_force, calculate_potential_field_value_temperature 
 from field_with_dijkstra import pathplanning_with_potential_field_and_dijkstra
 from functools import partial
-from environments.environment_1 import obstacles
+from environments.environment_2 import obstacles
 
 SCREEN_WIDTH = 800
 DELTA = 5
@@ -33,7 +34,10 @@ def draw_robot(robot, color, radius):
 
 def draw_obstacles(): 
     for entry in obstacles: 
-        pygame.draw.circle(screen, PURPLE, (int(entry.vektor[0]), int(entry.vektor[1])), 7)
+        if isinstance(entry, Static_Circle): 
+            pygame.draw.circle(screen, PURPLE, (int(entry.vektor[0]), int(entry.vektor[1])), 7)
+        elif isinstance(entry, Static_Polygon): 
+            pygame.draw.polygon(screen, PURPLE, entry.vertices, width=0)
 
 
 draw_robot(agent, BLACK, 5)
@@ -108,7 +112,6 @@ def visualizaion_3d_function(alpha, temp):
     ax.set_zlabel('value of potential field')
     plt.title('Value function of Robot')
 
-
     plt.show()  
     
     
@@ -119,7 +122,7 @@ def heat_field_with_dijkstra():
 
 
 def main(): 
-    visualizaion_3d_function(1,1)
+    #visualizaion_3d_function(1,1)
     heat_field_with_dijkstra()
     visualization_heat_map(1,1)
     
