@@ -2,8 +2,7 @@ from shapely.geometry import Polygon, Point
 
 class Static_Polygon: 
     
-    # We are going to store the edges of the square as follows: 
-    # [(x_1, y_1), (x_2, y_2), (x_3, y_3)]
+    # We are going to store the edges of the square as follows: [(x_1, y_1), (x_2, y_2), (x_3, y_3)]
     def __init__(self, distance_of_influence, attraction, edges) -> None:
         self.distance_of_influence = distance_of_influence
         self.attraction = attraction 

@@ -52,8 +52,8 @@ def calculate_potential_field_value(robot, target, obstacles):
 def calculate_potential_field_value_temperature(target, obstacles, alpha, temp, robot): 
     sum_of_rep = 0 
     for obstacle in obstacles: 
-        sum_of_rep += calculate_single_repulsion_temperature(robot, obstacle, alpha, temp)
-    return sum_of_rep + calculate_attraction_temperature(robot, target, alpha, temp) 
+        sum_of_rep += calculate_single_repulsion(robot, obstacle, alpha, temp)
+    return sum_of_rep + calculate_attraction(robot, target, alpha, temp) 
 
 
 def distance(first_vektor, second_vektor): 
@@ -72,18 +72,12 @@ def calculate_total_force(robot, target, obstacle_set):
     return result
 
 
-def calculate_attraction(robot, target): 
-    if (distance(robot.vektor, target.vektor)) <= SIGMA_ZERO: 
-        return 0.5 * target.attraction * ((distance(robot.vektor, target.vektor) / 100) ** 2)
-    return target.attraction * distance(robot.vektor, target.vektor)/100 * SIGMA_ZERO - (0.5 * target.attraction * SIGMA_ZERO * SIGMA_ZERO) / 100
-
-
-def calculate_attraction_temperature(robot, target, alpha, temp):
+def calculate_attraction(robot, target, alpha=1, temp=1):
     distance_val = distance(robot.vektor, target.vektor) / 100
     if distance_val == 0: 
         robot_with_delta = copy.deepcopy(robot)
         robot_with_delta.vektor = (robot.vektor[0] + DELTA_FOR_ZERO, robot.vektor[1] + DELTA_FOR_ZERO)
-        return calculate_attraction_temperature(robot_with_delta, target, alpha, temp)
+        return calculate_attraction(robot_with_delta, target, alpha, temp)
     if (distance_val/temp) <= SIGMA_ZERO: 
         return 0.5 * target.attraction * (distance_val ** 2) / (alpha * temp)
     return (target.attraction * distance(robot.vektor, target.vektor) / 100 * SIGMA_ZERO - 0.5 * target.attraction * SIGMA_ZERO * SIGMA_ZERO) / (alpha * temp)
@@ -104,28 +98,17 @@ def calculate_attraction_force(robot, target):
     return ((x_result * SIGMA_ZERO) / dividend, (y_result * SIGMA_ZERO) / dividend)
 
 
-def calculate_single_repulsion(robot, obstacle): 
-    if distance(robot.vektor, obstacle.vektor) > obstacle.radius_of_influence: 
-        return 0.0
-    if distance(robot.vektor, obstacle.vektor) == 0: 
-        robot_with_delta = copy.deepcopy(robot)
-        robot_with_delta.vektor = (robot.vektor[0] + DELTA_FOR_ZERO, robot.vektor[1] + DELTA_FOR_ZERO)
-        return calculate_single_repulsion(robot_with_delta, obstacle)
-    return 0.5 * obstacle.attraction * ((100.0/distance(robot.vektor, obstacle.vektor)) - (100.0/obstacle.radius_of_influence)) ** 2
-
-
-def calculate_single_repulsion_temperature(robot, obstacle, alpha, temp): 
+def calculate_single_repulsion(robot, obstacle, alpha=1, temp=1): 
     distance_val = distance(robot.vektor, obstacle.vektor) 
     #if (distance_val / temp) > obstacle.radius_of_influence: 
      #   return 0.0
-    if distance(robot.vektor, obstacle.vektor) == 0: 
+    if distance_val == 0: 
         robot_with_delta = copy.deepcopy(robot)
         robot_with_delta.vektor = (robot.vektor[0] + DELTA_FOR_ZERO, robot.vektor[1] + DELTA_FOR_ZERO)
-        return calculate_single_repulsion_temperature(robot_with_delta, obstacle, alpha, temp)
+        return calculate_single_repulsion(robot_with_delta, obstacle, alpha, temp)
     distance_by_alptemp = distance_val / (alpha * temp)
     
     difference = 50 * math.exp(-0.001 * (distance_by_alptemp ** 2))
-    #coefficients = obstacle.attraction * (1/distance_by_alptemp - 1/obstacle.radius_of_influence) * 1/(distance_by_alptemp ** 2)
     return difference * 0.5 * obstacle.attraction
 
 
