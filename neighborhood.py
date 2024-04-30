@@ -32,16 +32,13 @@ def dijkstra(start, end):
     
     while priority_queue: 
         current_distance, current_node = heapq.heappop(priority_queue)
-        print(len(visited))
         
         #Backwards traversal such that we find the path if we reached the end node
         if current_node == end:
-            print("Spinning in path construction")
             shortest_path = []
             while current_node is not None:
                 
                 shortest_path.append(current_node.position)
-                print(current_node.position)
                 _, parent = distances[current_node]
                 current_node = parent
                 

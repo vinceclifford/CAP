@@ -9,7 +9,7 @@ from classes.static_polygon import Static_Polygon
 from engine_math import norm, calculate_total_force, calculate_potential_field_value_temperature 
 from field_with_dijkstra import pathplanning_with_potential_field_and_dijkstra
 from functools import partial
-from environments.environment_4 import obstacles, agent, target 
+from environments.environment_5 import obstacles, agent, target 
 
 SCREEN_WIDTH = 800
 DELTA = 5
@@ -102,7 +102,6 @@ def visualizaion_3d_function(alpha, temp):
     y = np.arange(0, SCREEN_HEIGHT, 1 )
     X, Y = np.meshgrid(x,y)
     zs = np.array([curried(Robot(x,y)) for x,y in zip(np.ravel(X), np.ravel(Y))])
-    print(zs)
     Z = zs.reshape(X.shape)
     surf = ax.plot_surface(X, Y, Z, cmap='viridis')
     

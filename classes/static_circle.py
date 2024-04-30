@@ -1,7 +1,7 @@
 import numpy as np  
 
 class Static_Circle: 
-    def __init__(self, x, y, radius,  attraction, no_interference=30) -> None:
+    def __init__(self, x, y, radius,  attraction, no_interference=10) -> None:
         self.vektor = (x,y)
         self.distance_of_influence = radius
         self.attraction = attraction 
