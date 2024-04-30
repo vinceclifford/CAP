@@ -12,4 +12,4 @@ class Test_Static_Square(unittest.TestCase):
         self.assertEqual(square.distance(1,0.5), 0, "The distance should be 0!")
     
 if __name__ == '__main__': 
-    unittest.main()
+    unittest.main() 

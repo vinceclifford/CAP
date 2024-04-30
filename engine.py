@@ -1,4 +1,5 @@
 import pygame 
+import sys 
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns 
@@ -8,7 +9,7 @@ from classes.static_polygon import Static_Polygon
 from engine_math import norm, calculate_total_force, calculate_potential_field_value_temperature 
 from field_with_dijkstra import pathplanning_with_potential_field_and_dijkstra
 from functools import partial
-from environments.environment_2 import obstacles
+from environments.environment_1 import obstacles, agent, target 
 
 SCREEN_WIDTH = 800
 DELTA = 5
@@ -18,9 +19,6 @@ WHITE = (255,255,255)
 BLACK = (0,0,0)
 RED = (255, 0, 0)
 PURPLE = (160, 32, 240)
-
-target = Static_Circle(400, 400, 30, 3)
-agent = Robot(45, 45)
 
 pygame.init()  
 pygame.display.set_caption("Gradient Descent")
@@ -39,7 +37,9 @@ def draw_obstacles():
         elif isinstance(entry, Static_Polygon): 
             pygame.draw.polygon(screen, PURPLE, entry.vertices, width=0)
 
-
+if SCREEN_WIDTH <= 0: 
+    exit("A non positive Screen width was entered")
+    
 draw_robot(agent, BLACK, 5)
 draw_robot(target, RED, 10)
 draw_obstacles()
@@ -73,16 +73,18 @@ def visualization_heat_map(alpha, temp):
         for y in range(SCREEN_HEIGHT): 
             visualization_robot.vektor = x,y
             value = calculate_potential_field_value_temperature(target, obstacles, alpha, temp, visualization_robot ) 
-            inner_array.append(value)
+            if value == sys.float_info.max: 
+                inner_array.append(sys.maxsize)
+            else: 
+                inner_array.append(value)
+                if value > max: 
+                    max = value 
         outer_array.append(inner_array)
         
     outer_array = np.transpose(outer_array)
 
-    print(max)
-    print(position)
-
     data = np.array(outer_array)
-    sns.heatmap(data, cmap='viridis')
+    sns.heatmap(data, cmap='viridis', vmax=max)
     plt.title('Heatmap of Robot')
     plt.xlabel('x coordinate')
     plt.ylabel('y coordinate')
