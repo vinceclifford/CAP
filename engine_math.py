@@ -55,7 +55,10 @@ def calculate_potential_field_value(robot, target, obstacles):
 def calculate_potential_field_value_temperature(target, obstacles, alpha, temp, robot): 
     sum_of_rep = 0 
     for obstacle in obstacles: 
-        sum_of_rep += calculate_single_repulsion(robot, obstacle, alpha, temp)
+        result = calculate_single_repulsion(robot, obstacle, alpha, temp)
+        if result == sys.float_info.max: 
+            return sys.float_info.max
+        sum_of_rep += result
     return sum_of_rep + calculate_attraction(robot, target, alpha, temp) 
 
 

@@ -9,7 +9,7 @@ from classes.static_polygon import Static_Polygon
 from engine_math import norm, calculate_total_force, calculate_potential_field_value_temperature 
 from field_with_dijkstra import pathplanning_with_potential_field_and_dijkstra
 from functools import partial
-from environments.environment_1 import obstacles, agent, target 
+from environments.environment_4 import obstacles, agent, target 
 
 SCREEN_WIDTH = 800
 DELTA = 5
@@ -67,7 +67,6 @@ def visualization_heat_map(alpha, temp):
     outer_array = []
     visualization_robot = Robot(0,0)
     max = -1
-    position = None
     for x in range(SCREEN_WIDTH): 
         inner_array = []
         for y in range(SCREEN_HEIGHT): 
@@ -78,7 +77,8 @@ def visualization_heat_map(alpha, temp):
             else: 
                 inner_array.append(value)
                 if value > max: 
-                    max = value 
+                    max = value   
+                             
         outer_array.append(inner_array)
         
     outer_array = np.transpose(outer_array)

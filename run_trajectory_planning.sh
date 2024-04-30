@@ -4,7 +4,7 @@
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-export PYTHONPATH="$SCRIPT_DIR:$PYTHONPATH"
+export x^="$SCRIPT_DIR:$PYTHONPATH"
 echo "The pythonpath has been set to: $PYTHONPATH"
 
 if [[ ":$PYTHONPATH:" != *"/Deterministic_Annealing:"* ]]; then
