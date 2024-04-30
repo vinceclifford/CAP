@@ -108,7 +108,7 @@ def calculate_single_repulsion(robot, obstacle, alpha=1, temp=1):
     distance_val = obstacle.distance(robot.vektor[0], robot.vektor[1])
     #if (distance_val / temp) > obstacle.radius_of_influence: 
      #   return 0.0
-    if distance_val == 0: 
+    if distance_val < obstacle.no_interference: 
         return sys.float_info.max
     distance_by_alptemp = distance_val / (alpha * temp)
     
