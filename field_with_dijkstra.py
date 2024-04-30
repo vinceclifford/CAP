@@ -2,11 +2,10 @@ from classes.node import Node
 from classes.robot import Robot
 from classes.static_circle import Static_Circle
 from engine_math import calculate_potential_field_value_temperature
-import time 
 from neighborhood import dijkstra
+from tqdm import tqdm
 
 def pathplanning_with_potential_field_and_dijkstra(robot, target, obstacles, alpha, temp, width, height): 
-    print('We are about to construct the graph')
     start, goal = construct_entire_graph(robot, target, obstacles, width, height)
     path, cost = dijkstra(start, goal)    
     return path 
@@ -18,14 +17,17 @@ def construct_entire_graph(robot, target : Static_Circle, obstacles, width, heig
     map_koordinates_to_node = {}
     
     directions = [(0, 1), (0, -1), (1, 0), (-1, 0)]
-    
+    progress_bar = tqdm(total=width*height, desc="Creating nodes in graph: ", leave=False)
     #Create the nodes of the entire graph 
     for x in range(0, width + 1): 
         for y in range(0, height + 1): 
             map_koordinates_to_node[(x,y)] = Node((x,y))
-    
-    print("Done with creation of the nodes of the enitre graph")
+            progress_bar.update(1)
 
+    progress_bar.close()
+    print("Done with creating nodes")
+
+    progress_bar = tqdm(total=width*height, desc="Adding weights to nodes in graph: ")
     #Compute edges and store them 
     for x in range(0, width + 1): 
         for y in range(0, height):
@@ -46,7 +48,10 @@ def construct_entire_graph(robot, target : Static_Circle, obstacles, width, heig
                     node_looking_at.addNeighbours(map_koordinates_to_node[point], value)
                 else: 
                     node_looking_at.addNeighbours(map_koordinates_to_node[point], map_koordinates_to_field_value[point])
-                
-    print('We added the edges to the graph and are now finished with constructing the entire graph!')
+            
+            progress_bar.update(1)
+            
+    progress_bar.close()
+    print('Done with adding weights to edges')
 
     return map_koordinates_to_node[robot.vektor], map_koordinates_to_node[target.vektor]    

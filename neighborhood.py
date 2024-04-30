@@ -23,7 +23,6 @@ def find_intersecting_points(path, midpoint, radius):
 
     
 def dijkstra(start, end): 
-    print('Starting with Dijkstras Algorithm')
     distances = {} 
     distances[start] = 0, None
     visited = {start}
@@ -52,6 +51,8 @@ def dijkstra(start, end):
                 distances[neighbor] = distance, current_node
                 visited.add(neighbor)
                 heapq.heappush(priority_queue, (distance, neighbor)) 
+        
+    print("Done with Dijkstras Algorithm")
                 
     return None, float('inf')
     

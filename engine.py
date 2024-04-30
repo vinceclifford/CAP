@@ -118,6 +118,7 @@ def visualizaion_3d_function(alpha, temp):
     
 def heat_field_with_dijkstra(): 
     path_points = pathplanning_with_potential_field_and_dijkstra(agent, target, obstacles, 1, 1, SCREEN_WIDTH, SCREEN_HEIGHT)
+    print("Visualizing...")
     pygame.draw.lines(screen, BLACK, False, path_points, 2)
     pygame.display.flip()
 
