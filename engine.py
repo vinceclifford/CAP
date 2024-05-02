@@ -9,7 +9,8 @@ from classes.static_polygon import Static_Polygon
 from engine_math import norm, calculate_total_force, calculate_potential_field_value_temperature 
 from field_with_dijkstra import pathplanning_with_potential_field_and_dijkstra
 from functools import partial
-from environments.environment_5 import obstacles, agent, target 
+from environments.environment_1 import obstacles, agent, target 
+
 
 SCREEN_WIDTH = 800
 DELTA = 5
@@ -20,32 +21,34 @@ BLACK = (0,0,0)
 RED = (255, 0, 0)
 PURPLE = (160, 32, 240)
 
-pygame.init()  
-pygame.display.set_caption("Gradient Descent")
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-screen.fill(WHITE)
-clock = pygame.time.Clock()
+def draw_robot(screen, robot, color, radius): 
+    """Summary of function draw_robot(): Will draw robot on screen for visualization purposes
 
-def draw_robot(robot, color, radius): 
+    Args:
+        screen (pygame.surface.Surface): surface on which the trajectory is displayed
+        robot (static_circle):  Object of the robot 
+        color ((int, int, int)): color in which the robot should be visualized
+        radius (int): radius of the displayed robot 
+    """
     pygame.draw.circle(screen, color, (int(robot.vektor[0]), int(robot.vektor[1])), radius)
 
 
-def draw_obstacles(): 
+def draw_obstacles(screen, obstacles, color, radius): 
+    """Summary of function draw_obstacles(): Will draw all obstacles on screen for visualization purposes. 
+    Depending on whether the obstacle is a polygon or circle a different obstacle will be rendered
+
+    Args:
+        Same as in the function draw_robot apart from robot. obstacles is of type list. 
+    """
+    
     for entry in obstacles: 
         if isinstance(entry, Static_Circle): 
-            pygame.draw.circle(screen, PURPLE, (int(entry.vektor[0]), int(entry.vektor[1])), 7)
+            pygame.draw.circle(screen, color, (int(entry.vektor[0]), int(entry.vektor[1])), radius)
         elif isinstance(entry, Static_Polygon): 
             pygame.draw.polygon(screen, PURPLE, entry.vertices, width=0)
 
-if SCREEN_WIDTH <= 0: 
-    exit("A non positive Screen width was entered")
-    
-draw_robot(agent, BLACK, 5)
-draw_robot(target, RED, 10)
-draw_obstacles()
-pygame.display.flip()
 
-def gradient_descent(robot, target, obstacle_set): 
+def gradient_descent(clock, robot, target, obstacle_set): 
     done = False
     iteration = 0 
     while not done: 
@@ -64,6 +67,12 @@ def gradient_descent(robot, target, obstacle_set):
 
 
 def visualization_heat_map(alpha, temp): 
+    """Summary of visualization_heat_map(): Will display a heat map of the potential field value function 
+
+    Args:
+        alpha (int): alpha for deterministic annealing 
+        temp (int): temp for deterministic annealing
+    """
     outer_array = []
     visualization_robot = Robot(0,0)
     max = -1
@@ -71,7 +80,10 @@ def visualization_heat_map(alpha, temp):
         inner_array = []
         for y in range(SCREEN_HEIGHT): 
             visualization_robot.vektor = x,y
-            value = calculate_potential_field_value_temperature(target, obstacles, alpha, temp, visualization_robot ) 
+            value = calculate_potential_field_value_temperature(target, obstacles, alpha, temp, visualization_robot) 
+            
+            # Cut of the maximum value. This is due to the fact that otherwise a scaled heat map would be unusuable. You would only see 
+            # the difference between the max and non-max values. Nothing in between. 
             if value == sys.float_info.max: 
                 inner_array.append(sys.maxsize)
             else: 
@@ -80,7 +92,8 @@ def visualization_heat_map(alpha, temp):
                     max = value   
                              
         outer_array.append(inner_array)
-        
+     
+    # Else the heat map is transposed.    
     outer_array = np.transpose(outer_array)
 
     data = np.array(outer_array)
@@ -93,6 +106,13 @@ def visualization_heat_map(alpha, temp):
     
 
 def visualizaion_3d_function(alpha, temp):
+    """Summary of visualizaion_3d_function: Will create a 3D function. This visualized function will receive two inputs, the coordinates of 
+    the robot, and will calculate the potential field value. 
+
+    Args:
+        alpha (int): alpha for deterministic annealing 
+        temp (int): temp for deterministic annealing
+    """
     curried = partial(calculate_potential_field_value_temperature, target, obstacles, alpha, temp)
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
@@ -116,16 +136,36 @@ def visualizaion_3d_function(alpha, temp):
     plt.show()  
     
     
-def heat_field_with_dijkstra(): 
-    path_points = pathplanning_with_potential_field_and_dijkstra(agent, target, obstacles, 1, 1, SCREEN_WIDTH, SCREEN_HEIGHT)
-    print("Visualizing...")
+def visualizing_dijkstra(screen): 
+    """Summary of visualizing dijkstra(): After receiving trajectory path of dijkstra algorithm we display it.
+
+    Args:
+        screen (pygame.surface.Surface): surface on which the trajectory is displayed
+    """
+    
+    path_points, _ = pathplanning_with_potential_field_and_dijkstra(agent, target, obstacles, SCREEN_WIDTH, SCREEN_HEIGHT)
     pygame.draw.lines(screen, BLACK, False, path_points, 2)
     pygame.display.flip()
 
 
 def main(): 
+    
+    pygame.init()  
+    pygame.display.set_caption("Trajectory planning")
+    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+    screen.fill(WHITE)
+    clock = pygame.time.Clock()
+    
+    if SCREEN_WIDTH <= 0: 
+        exit("A non positive Screen width was entered")
+    
+    draw_robot(screen, agent, BLACK, 5)
+    draw_robot(screen, target, RED, 10)
+    draw_obstacles(screen, obstacles, PURPLE, 7)
+    pygame.display.flip()
+    
     #visualizaion_3d_function(1,1)
-    heat_field_with_dijkstra()
+    visualizing_dijkstra(screen)
     visualization_heat_map(1,1)
     
     while True: 

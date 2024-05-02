@@ -23,16 +23,31 @@ def find_intersecting_points(path, midpoint, radius):
 
     
 def dijkstra(start, end): 
+    """Summary dijkstra(): Will return the shortest path with regards to the previously computed potential field value. 
+
+    Args:
+        start (node): Starting node 
+        end (node): Goal node 
+
+    Returns:
+        (list, cost): Will the return the path in a list of tuples corresponding to the x andd y value. The total cost of the path will 
+        also be returned  
+    """
+    
+    # Dictionary that maps node to it's current cost and parent node that expanded that node 
     distances = {} 
     distances[start] = 0, None
-    visited = {start}
+    
+    # Set to store all already visited nodes
+    visited = {start} 
 
     priority_queue = [(0, start)] 
     
     while priority_queue: 
+        # Get the node with the current least amount of costs 
         current_distance, current_node = heapq.heappop(priority_queue)
         
-        #Backwards traversal such that we find the path if we reached the end node
+        # Backwards traversal such that we find the path if we reached the end node
         if current_node == end:
             shortest_path = []
             while current_node is not None:
@@ -42,18 +57,21 @@ def dijkstra(start, end):
                 current_node = parent
                 
             shortest_path.reverse()
+            print("Done with Dijkstras Algorithm")
             return shortest_path, current_distance   
         
         for neighbor, weight in current_node.neighbors.items(): 
             distance = current_distance + weight 
             
+            # If we have not visited the neighbor, we need to visit him again. If we have already visited the node and find a shorter path to him, we need to update the path accrodingly. 
             if neighbor not in visited or distance < distances[neighbor][0]: 
                 distances[neighbor] = distance, current_node
                 visited.add(neighbor)
                 heapq.heappush(priority_queue, (distance, neighbor)) 
         
     print("Done with Dijkstras Algorithm")
-                
+     
+    # No path to our algorithm could be found            
     return None, float('inf')
     
 
