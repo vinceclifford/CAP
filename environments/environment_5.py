@@ -18,5 +18,5 @@ obstacles = {
     obstacle_6
 }
 
-target = Static_Circle(261, 375, 30, 3)
+target = Static_Circle(261, 375 , 30, 3)
 agent = Robot(20, 20)

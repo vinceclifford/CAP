@@ -11,6 +11,8 @@ from field_with_dijkstra import pathplanning_with_potential_field_and_dijkstra
 from functools import partial           
 from environments.environment_6 import obstacles, agent, target 
 
+from functools import partial
+from environments.environment_1 import obstacles, agent, target 
 
 SCREEN_WIDTH = 800
 DELTA = 5

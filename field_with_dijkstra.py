@@ -4,6 +4,8 @@ from classes.static_circle import Static_Circle
 from engine_math import calculate_potential_field_value_temperature
 from neighborhood import dijkstra
 from tqdm import tqdm
+import numpy as np
+import torch 
 
 def pathplanning_with_potential_field_and_dijkstra(robot, target, obstacles, width, height, alpha=1, temp=1): 
     """Summary of function pathplanning_with_potential_field_and_dijkstra 
@@ -45,8 +47,7 @@ def construct_entire_graph(robot, target : Static_Circle, obstacles, width, heig
     # List of all steps we could take in the next iteration. Don't include diagonal steps in the direction. This will result in suboptimal
     # paths beeing taken in the path planning 
     directions = [(0, 1), (0, -1), (1, 0), (-1, 0)]
-    progress_bar = tqdm(total=width*height, desc="Creating nodes in graph: ", leave=False)
-    
+    progress_bar = tqdm(total=width*height, desc="Creating nodes in graph")
     #Create the nodes of the entire graph 
     for x in range(0, width + 1): 
         for y in range(0, height + 1): 
@@ -56,7 +57,8 @@ def construct_entire_graph(robot, target : Static_Circle, obstacles, width, heig
     progress_bar.close()
     print("Done with creating nodes")
 
-    progress_bar = tqdm(total=width*height, desc="Adding weights to nodes in graph: ")
+    progress_bar = tqdm(total=width*height, desc="Adding weights to nodes in graph")
+    #Compute edges and store them 
     for x in range(0, width + 1): 
         for y in range(0, height):
             node_looking_at = map_koordinates_to_node[(x,y)] 
@@ -88,3 +90,34 @@ def construct_entire_graph(robot, target : Static_Circle, obstacles, width, heig
     print('Done with adding weights to edges')
 
     return map_koordinates_to_node[robot.vektor], map_koordinates_to_node[target.vektor]    
+
+
+def construct_entire_graph_tensor(robot, target : Static_Circle, obstacles, width, height, alpha=1, temp=1): 
+    basic_tensor_row = torch.arange(1, width + 1)  
+    basic_tensor_column = torch.arange(1, height + 1)
+    
+    first_layer_tensor = basic_tensor_row.unsqueeze(0).repeat(height, 1)
+    second_layer_tensor = basic_tensor_column.unsqueeze(0).repeat(width, 1).t()
+    
+    position_tensor = torch.stack((first_layer_tensor, second_layer_tensor))
+    obstacle_tensor = torch.zeros(len(obstacles), 2)
+     
+    for index, obstacle in enumerate(obstacles): 
+        obstacle_tensor[index] = torch.tensor(obstacle.vektor).to(obstacle_tensor.dtype)
+        
+    print(position_tensor)
+    print(obstacle_tensor)
+    
+
+    print(position_tensor)
+    print(position_tensor.size())
+    print(obstacle_tensor)
+    print(obstacle_tensor.size())
+    
+if __name__ == '__main__': 
+    ob_1 = Static_Circle(40,50, 40,30)
+    ob_2 = Static_Circle(120,510, 40,30)
+    ob_3 = Static_Circle(300,300, 40,30)
+
+    obs = {ob_1, ob_2, ob_3}
+    construct_entire_graph_tensor(None, None, obs, 800, 640)
