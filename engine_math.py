@@ -143,7 +143,7 @@ def calculate_single_repulsion(robot, obstacle, alpha=1, temp=1):
 
     # We must guarantee that the robot does not hit the obstacle in a given radius, specified by the parameter obstacle.no_interference.
     # This will be achieved by giving that point an infinite amount of repulsion value. We will never chose to traverse this path. 
-    if distance_val < obstacle.no_interference: 
+    if distance_val <= obstacle.no_interference: 
         return sys.float_info.max
     distance_by_alptemp = distance_val / (alpha * temp)
     

@@ -9,7 +9,7 @@ from classes.static_polygon import Static_Polygon
 from engine_math import calculate_total_force, calculate_potential_field_value_temperature, distance 
 from field_with_dijkstra import pathplanning_with_potential_field_and_dijkstra
 from functools import partial
-from environments.environment_8 import obstacles, agent, target 
+from environments.environment_10 import obstacles, agent, target 
 
 
 SCREEN_WIDTH = 800
