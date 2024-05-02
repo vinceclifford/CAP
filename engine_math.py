@@ -1,11 +1,8 @@
 import math
 import sys 
 import copy 
-<<<<<<< Updated upstream
 import numpy as np
-=======
 import torch 
->>>>>>> Stashed changes
 from scipy.optimize import minimize
 from functools import partial 
 
