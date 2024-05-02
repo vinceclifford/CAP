@@ -8,8 +8,8 @@ from classes.static_circle import Static_Circle
 from classes.static_polygon import Static_Polygon
 from engine_math import calculate_total_force, calculate_potential_field_value_temperature, distance 
 from field_with_dijkstra import pathplanning_with_potential_field_and_dijkstra
-from functools import partial
-from environments.environment_10 import obstacles, agent, target 
+from functools import partial           
+from environments.environment_6 import obstacles, agent, target 
 
 
 SCREEN_WIDTH = 800
@@ -58,7 +58,7 @@ def gradient_descent(clock, robot, target, obstacle_set):
         if distance(robot.vektor, target.vektor) < DELTA: 
             break  
         total_force = calculate_total_force(robot,target, obstacle_set)
-        d = distance(total_force)
+        d = distance(total_force, (0,0))
         normalized_total_force = (total_force[0] / d), (total_force[1] / d)
         robot.vektor = robot.vektor[0] + normalized_total_force[0] * STEP_SIZE, robot.vektor[1] + normalized_total_force[1] * STEP_SIZE
         draw_robot(robot, BLACK, 5)
