@@ -9,7 +9,7 @@ from classes.static_polygon import Static_Polygon
 from engine_math import calculate_total_force, calculate_potential_field_value_temperature, distance 
 from field_with_dijkstra import pathplanning_with_potential_field_and_dijkstra
 from functools import partial
-from environments.environment_1 import obstacles, agent, target 
+from environments.environment_8 import obstacles, agent, target 
 
 
 SCREEN_WIDTH = 800
@@ -123,7 +123,7 @@ def visualizaion_3d_function(alpha, temp):
     X, Y = np.meshgrid(x,y)
     zs = np.array([curried(Robot(x,y)) for x,y in zip(np.ravel(X), np.ravel(Y))])
     Z = zs.reshape(X.shape)
-    surf = ax.plot_surface(X, Y, Z, cmap='viridis')
+    surf = ax.plot_surface(X, Y, Z, cmap='viridis', vmax=140)
     
     colorbar = fig.colorbar(surf, ax=ax, shrink=0.7)
     colorbar.outline.set_visible(False)
@@ -142,7 +142,7 @@ def visualizing_dijkstra(screen):
     Args:
         screen (pygame.surface.Surface): surface on which the trajectory is displayed
     """
-    
+    print("Visualizing...")
     path_points, _ = pathplanning_with_potential_field_and_dijkstra(agent, target, obstacles, SCREEN_WIDTH, SCREEN_HEIGHT)
     pygame.draw.lines(screen, BLACK, False, path_points, 2)
     pygame.display.flip()
