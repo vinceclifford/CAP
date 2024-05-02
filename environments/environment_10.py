@@ -15,7 +15,7 @@ obstacle_10 = Static_Polygon([(410, 10), (410, 610), (410, 610)], 5, 3,no_interf
 obstacle_11 = Static_Polygon([(410, 300), (600, 300), (600, 300)], 5, 3,no_interference=2)
 obstacle_12 = Static_Polygon([(600, 10), (600, 300), (600, 300)], 5, 3, no_interference=2)
 obstacle_13 = Static_Polygon([(610, 10), (790, 10), (790, 10)], 5, 3, no_interference=2) 
-obstacle_14 = Static_Polygon([(610, 10), (610, 300), (610, 300)], 5, 3,no_interference=18)
+obstacle_14 = Static_Polygon([(610, 10), (610, 300), (610, 300)], 5, 3,no_interference=2)
 obstacle_15 = Static_Polygon([(610, 300), (790, 300), (790, 300)], 5, 3, no_interference=2)
 obstacle_16 = Static_Polygon([(790, 300), (790, 630), (790, 630)], 5, 3, no_interference=2)
 obstacle_17 = Static_Polygon([(790, 630), (10, 630), (10, 630)], 5, 3, no_interference=2)
