@@ -73,7 +73,7 @@ def calculate_potential_field_value_temperature(target, obstacles, alpha, temp, 
 
 
 def distance(first_vektor, second_vektor): 
-    np.linalg.norm(np.array([first_vektor[0], first_vektor]) - np.array([second_vektor, second_vektor]))
+    return np.linalg.norm(np.array(first_vektor) - np.array(second_vektor))
 
 
 def calculate_total_force(robot, target, obstacle_set): 
