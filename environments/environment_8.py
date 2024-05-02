@@ -16,9 +16,6 @@ obstacle_11 = Static_Polygon([(667,128), (667, 490), (667, 490)], 80, 3 )
 obstacle_12 = Static_Polygon([(133,512), (667, 512), (667, 512)], 80, 3 )
 obstacle_13 = Static_Polygon([(533,512), (533, 640), (533, 640)], 80, 3 )
 
-
-
-
 obstacles = {
     obstacle_1, 
     obstacle_2, 
@@ -37,4 +34,3 @@ obstacles = {
 
 target = Static_Circle(667, 610, 30, 3)
 agent = Robot(50, 50)
-
