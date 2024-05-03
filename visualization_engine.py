@@ -8,11 +8,11 @@ from classes.static_circle import Static_Circle
 from classes.static_polygon import Static_Polygon
 from engine_math import calculate_total_force, calculate_potential_field_value_temperature, distance 
 from field_with_dijkstra import pathplanning_with_potential_field_and_dijkstra
+from tensor_math import create_potential_field_value_tensor
+from dijkstra import dijkstra_on_nparray_with_dictionary_without_detach
 from functools import partial           
-from environments.environment_6 import obstacles, agent, target 
-
-from functools import partial
 from environments.environment_1 import obstacles, agent, target 
+import time
 
 SCREEN_WIDTH = 800
 DELTA = 5
@@ -138,14 +138,13 @@ def visualizaion_3d_function(alpha, temp):
     plt.show()  
     
     
-def visualizing_dijkstra(screen): 
+def visualizing_dijkstra(screen, path_points): 
     """Summary of visualizing dijkstra(): After receiving trajectory path of dijkstra algorithm we display it.
 
     Args:
         screen (pygame.surface.Surface): surface on which the trajectory is displayed
     """
     print("Visualizing...")
-    path_points, _ = pathplanning_with_potential_field_and_dijkstra(agent, target, obstacles, SCREEN_WIDTH, SCREEN_HEIGHT)
     pygame.draw.lines(screen, BLACK, False, path_points, 2)
     pygame.display.flip()
 
@@ -166,10 +165,16 @@ def main():
     draw_obstacles(screen, obstacles, PURPLE, 7)
     pygame.display.flip()
     
+    tensor = create_potential_field_value_tensor(obstacles, target, SCREEN_WIDTH, SCREEN_HEIGHT)
+    starting_time = time.time()
+    path, _ = dijkstra_on_nparray_with_dictionary_without_detach(tensor, agent.vektor, target.vektor, SCREEN_WIDTH, SCREEN_HEIGHT)
+    finishing_time = time.time()
     #visualizaion_3d_function(1,1)
-    visualizing_dijkstra(screen)
-    visualization_heat_map(1,1)
+    visualizing_dijkstra(screen, path)
+    #visualization_heat_map(1,1)
     
+    diff = finishing_time - starting_time
+    print(f"Computational time at {diff}")
     while True: 
         done = False
         iteration = 0 

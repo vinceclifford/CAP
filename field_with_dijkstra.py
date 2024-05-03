@@ -2,7 +2,7 @@ from classes.node import Node
 from classes.robot import Robot
 from classes.static_circle import Static_Circle
 from engine_math import calculate_potential_field_value_temperature
-from neighborhood import dijkstra
+from dijkstra import dijkstra
 from tqdm import tqdm
 import numpy as np
 import torch 

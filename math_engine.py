@@ -1,8 +1,8 @@
 import math
 import sys 
 import copy 
-import numpy as np
 import torch 
+import numpy as np
 from scipy.optimize import minimize
 from functools import partial 
 
@@ -44,6 +44,8 @@ def calculate_potential_field_value(robot, target, obstacles):
         if result == sys.float_info.max: 
             return sys.float_info.max
         sum_of_rep += result
+        
+    return sum_of_rep
     return sum_of_rep + calculate_attraction(robot, target) 
 
 
@@ -74,11 +76,7 @@ def calculate_potential_field_value_temperature(target, obstacles, alpha, temp, 
 
 
 def distance(first_vektor, second_vektor): 
-<<<<<<< Updated upstream
     return np.linalg.norm(np.array(first_vektor) - np.array(second_vektor))
-=======
-    np.linalg.norm(np.array(first_vektor) - np.array(second_vektor))
->>>>>>> Stashed changes
 
 
 def calculate_total_force(robot, target, obstacle_set): 

@@ -1,10 +1,9 @@
 import numpy as np 
-import heapq 
-from engine_math import calculate_potential_field_value_temperature
+from math_engine import calculate_potential_field_value_temperature
 from classes.robot import Robot   
 from classes.node import Node   
 
-def get_minimal_neighboring_path(path, mid_point, radius, target, obstacles, alpha, temp): 
+"""def get_minimal_neighboring_path(path, mid_point, radius, target, obstacles, alpha, temp): 
     starting_point, final_point = find_intersecting_points(path, mid_point, radius)
     starting_node, final_node = construct_radius_graph(starting_point, final_point, mid_point, radius, target, obstacles, alpha, temp)
     return dijkstra(starting_node, final_node)
@@ -20,61 +19,7 @@ def find_intersecting_points(path, midpoint, radius):
 
     intersecting_points.sort(key= lambda x : x[1])
     return tuple(intersecting_points[:2]) 
-
-    
-def dijkstra(start, end): 
-    """Summary dijkstra(): Will return the shortest path with regards to the previously computed potential field value. 
-
-    Args:
-        start (node): Starting node 
-        end (node): Goal node 
-
-    Returns:
-        (list, cost): Will the return the path in a list of tuples corresponding to the x andd y value. The total cost of the path will 
-        also be returned  
-    """
-    
-    # Dictionary that maps node to it's current cost and parent node that expanded that node 
-    distances = {} 
-    distances[start] = 0, None
-    
-    # Set to store all already visited nodes
-    visited = {start} 
-
-    priority_queue = [(0, start)] 
-    
-    while priority_queue: 
-        # Get the node with the current least amount of costs 
-        current_distance, current_node = heapq.heappop(priority_queue)
-        
-        # Backwards traversal such that we find the path if we reached the end node
-        if current_node == end:
-            shortest_path = []
-            while current_node is not None:
-                
-                shortest_path.append(current_node.position)
-                _, parent = distances[current_node]
-                current_node = parent
-                
-            shortest_path.reverse()
-            print("Done with Dijkstras Algorithm")
-            return shortest_path, current_distance   
-        
-        for neighbor, weight in current_node.neighbors.items(): 
-            distance = current_distance + weight 
             
-            # If we have not visited the neighbor, we need to visit him again. If we have already visited the node and find a shorter path to him, we need to update the path accrodingly. 
-            if neighbor not in visited or distance < distances[neighbor][0]: 
-                distances[neighbor] = distance, current_node
-                visited.add(neighbor)
-                heapq.heappush(priority_queue, (distance, neighbor)) 
-        
-    print("Done with Dijkstras Algorithm")
-     
-    # No path to our algorithm could be found            
-    return None, float('inf')
-    
-
 def construct_radius_graph (starting_point, final_point, mid_point, radius, target, obstacles, alpha, temp): 
     x_start, y_start = starting_point
     x_final, y_final = final_point
@@ -126,3 +71,20 @@ def get_neighboring_points_with_radius(x, y, mid_point, radius):
         points.append((x - 1, y - 1))
         
     return points 
+
+"""
+def construct_graph_from_tensor(tensor, start, goal, width, height): 
+    directions = [(1,0), (-1,0), (0,-1), (0,1)]
+    map_koordinates_to_node = {} 
+    for x in range(0, width): 
+        for y in range(0, height): 
+            map_koordinates_to_node[(x,y)] = Node((x, y))
+            
+    for x in range(0, width): 
+        for y in range(0, height): 
+            for direction in directions: 
+                    next_x, next_y = x + direction[0], y + direction[1]
+                    if next_x >= 0 and next_x < width and next_y >= 0 and next_y < height: 
+                        map_koordinates_to_node[(x,y)].addNeighbours(map_koordinates_to_node[(next_x,next_y)], tensor[next_y, next_x].item())
+
+    return map_koordinates_to_node[start], map_koordinates_to_node[goal]  
