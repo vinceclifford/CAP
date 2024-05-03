@@ -6,9 +6,9 @@ import seaborn as sns
 from classes.robot import Robot
 from classes.static_circle import Static_Circle
 from classes.static_polygon import Static_Polygon
-from engine_math import calculate_total_force, calculate_potential_field_value_temperature, distance 
+from math_engine import calculate_total_force, calculate_potential_field_value_temperature, distance 
 from field_with_dijkstra import pathplanning_with_potential_field_and_dijkstra
-from tensor_math import create_potential_field_value_tensor
+from math_tensor import create_potential_field_value_tensor
 from dijkstra import dijkstra_on_nparray_with_dictionary_without_detach
 from functools import partial           
 from environments.environment_1 import obstacles, agent, target 

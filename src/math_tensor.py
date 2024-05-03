@@ -2,7 +2,6 @@ import torch
 from classes.static_circle import Static_Circle
 import matplotlib.pyplot as plt
 import seaborn as sns
-import time 
 
 
 C_DOUBLE_PRIME = -0.001

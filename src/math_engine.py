@@ -1,7 +1,6 @@
 import math
 import sys 
 import copy 
-import torch 
 import numpy as np
 from scipy.optimize import minimize
 from functools import partial 

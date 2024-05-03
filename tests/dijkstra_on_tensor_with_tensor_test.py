@@ -1,6 +1,6 @@
 import unittest
 import torch
-from dijkstra import dijkstra_on_tensor_with_tensor
+from src.dijkstra import dijkstra_on_tensor_with_tensor
 
 class Test_Dijkstra_Tensor_With_Tensor(unittest.TestCase): 
     

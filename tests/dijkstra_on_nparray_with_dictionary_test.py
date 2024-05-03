@@ -1,6 +1,6 @@
 import unittest
 import torch
-from dijkstra import dijkstra_on_nparray_with_dictionary
+from src.dijkstra import dijkstra_on_nparray_with_dictionary
 
 class Test_Dijkstra_NPArray_With_Dictionary(unittest.TestCase): 
     

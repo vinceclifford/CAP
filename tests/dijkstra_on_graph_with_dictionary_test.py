@@ -1,6 +1,6 @@
 import unittest
 import torch
-from dijkstra import dijkstra_on_graph_with_dictionary
+from src.dijkstra import dijkstra_on_graph_with_dictionary
 
 class Test_Dijkstra_Graph_With_Dictionary(unittest.TestCase): 
     

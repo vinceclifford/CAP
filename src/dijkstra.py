@@ -1,7 +1,7 @@
 import heapq 
 import torch
 import numpy as np
-from construct_graph import construct_graph_from_tensor
+from src.construct_graph import construct_graph_from_tensor
 
 def dijkstra(start, end): 
     """Summary dijkstra(): Will return the shortest path with regards to the previously computed potential field value. 

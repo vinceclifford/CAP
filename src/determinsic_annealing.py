@@ -1,9 +1,8 @@
 import matplotlib.pyplot as plt
-import sys
 import numpy as np
 from classes.static_circle import Static_Circle
 from classes.robot import Robot
-from engine_math import calculate_potential_field_value_temperature
+from math_engine import calculate_potential_field_value_temperature
 
 obstacles = set() 
 agent = Robot(-50, 0)
