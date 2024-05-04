@@ -1,7 +1,10 @@
 import torch
 from classes.static_circle import Static_Circle
+from classes.static_polygon import Static_Polygon
 import matplotlib.pyplot as plt
 import seaborn as sns
+import time
+import random
 
 
 C_DOUBLE_PRIME = -0.001
@@ -97,3 +100,47 @@ def create_potential_field_value_tensor(obstacles, target, width, height, alpha=
                     result[y, x] = torch.finfo(torch.float32).max
     
     return result
+
+
+def calculate_repulsive_force_singular_polygon_vektor(obstacle, point):
+    length_tensor = len(obstacle.vertices) - 1
+    edge_tensor = torch.empty(size=(length_tensor, 2), dtype=torch.float32)
+    norm_tensor = torch.empty(size=(length_tensor, 2), dtype=torch.float32)
+    a_point_tensor = torch.empty(size=(length_tensor, 2), dtype=torch.float32)
+    p_point_tensor = torch.flatten(torch.tensor(point)).repeat(length_tensor)
+    
+    for index in range(0, len(obstacle.vertices) - 1): 
+        point_a = torch.tensor(obstacle.vertices[index])
+        edge_tensor[index] = torch.tensor(obstacle.vertices[index + 1]) - point_a
+        norm_tensor[index] = torch.tensor((-edge_tensor[index, 1], edge_tensor[index, 0]))
+        a_point_tensor[index] = point_a
+    
+    a_point_tensor = torch.flatten(a_point_tensor)
+    edge_tensor = torch.flatten(edge_tensor)
+    norm_tensor = torch.flatten(norm_tensor)
+    
+    b = torch.t(p_point_tensor - a_point_tensor)
+    edge_tensor_reshaped = torch.stack((edge_tensor, -norm_tensor), dim=1).reshape(-1, 2, 2)
+    block_matrices = [torch.tensor(block) for block in edge_tensor_reshaped]
+
+    A = torch.block_diag(*block_matrices)
+
+    solution = torch.linalg.solve(A, b)
+    i_s = solution[::2]
+    filtered = i_s[(i_s >= 0) & (i_s <= 1)]
+    if filtered.size(0) == 0: 
+        return 
+    min_index = torch.argmin(filtered)    
+    distance = torch.linalg.norm(solution[min_index * 2 + 1].item() * norm_tensor[2 * min_index: 2 * min_index + 2])
+    return distance
+        
+def main(): 
+    obstacle_1 = Static_Polygon([(random.randint(0, 100), random.randint(0, 100)) for _ in range(20)], 4, 4)
+    c_time = time.time()
+    for i in range(0,100000): 
+        calculate_repulsive_force_singular_polygon_vektor(obstacle_1, (0.4,0))
+    f_time = time.time()
+    
+    print(f_time - c_time)
+if __name__ == "__main__": 
+    main()

@@ -15,13 +15,14 @@ class Static_Polygon:
         self.distance_of_influence = distance_of_influence
         self.attraction = attraction 
         self.vertices = vertices
-        self.polygon = Polygon(vertices)
+        #self.polygon = Polygon(vertices)
         self.no_interference = no_interference
          
-        
+        """
     def distance(self, x_robot, y_robot): 
         point = Point(x_robot, y_robot)
         distance = point.distance(self.polygon)
         return distance
+        """
             
         

@@ -9,7 +9,6 @@ echo "The pythonpath has been set to: $PYTHONPATH"
 
 if [[ ":$PYTHONPATH:" != *"/Deterministic_Annealing:"* ]]; then
     echo "Error: No entry in PYTHONPATH ending with /Deterministic_Annealing. Aborting script."
-    echo $PYTHONPATH
     exit 1
 else 
     echo "Success: PYTHONPATH has been correctly set"
