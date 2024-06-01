@@ -13,9 +13,6 @@ obstacle_7 = StaticCircle(266, 144, 130, 3, no_interference=50)
 obstacle_8 = StaticCircle(144, 144, 130, 3, no_interference=50)
 
 
-
-
-
 obstacles = [
     obstacle_1, 
     obstacle_2,

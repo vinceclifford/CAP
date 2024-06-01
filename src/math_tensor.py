@@ -5,6 +5,7 @@ C = 100
 
 
 def calculate_total_repulsive_field_value(obstacles, target, width, height, alpha=1, temp=1):
+
     circle_repulsive_tensor = calculate_circle_repulsive_field_value_tensor(obstacles, width, height, alpha, temp)
     attraction_repulsive_tensor = calculate_attraction_field_value_tensor(target, width, height, alpha, temp)
 
@@ -14,6 +15,9 @@ def calculate_total_repulsive_field_value(obstacles, target, width, height, alph
 
 
 def calculate_attraction_field_value_tensor(target, width, height, alpha=1, temp=1):
+    """
+    Calculates attraction field value tensor given target and width and height.
+    """
     x_layer_tensor, y_layer_tensor = create_base_tensors(width, height)
     # We set up tensors to determine the distance between all points in the environment and the target such that we
     # can determine the attraction force for each pixel
@@ -33,13 +37,12 @@ def calculate_attraction_field_value_tensor(target, width, height, alpha=1, temp
 
 def calculate_circle_repulsive_field_value_tensor(obstacles, width, height, alpha=1, temp=1):
     """Summary of function create_tensor_repulsive_force(): This function will calculate the potential field value
-    for the entire obstacle and store the value of each pixel (x,y) in a tensor. Calulating the potential field value
+    for the entire obstacle and store the value of each pixel (x,y) in a tensor. Calculating the potential field value
     function will be done through Pytorch. This will automatically result in parallel execution
        
     Args:
         obstacles (list): list of obstacles in given environment
-        target (static_circle): object of goal 
-        width (int): width of the environment 
+        width (int): width of the environment
         height (int): height of the environment 
         alpha (float): alpha for deterministic annealing. Defaults to 1.
         temp (float): temp for deterministic annealing. Defaults to 1.
