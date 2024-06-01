@@ -26,3 +26,8 @@ class StaticPolygon:
                 self.y_min = vertex[1]
             if vertex[1] > self.y_max:
                 self.y_max = vertex[1]
+
+        looking_for_duplicate = set()
+        for vertex in vertices:
+            if vertex in self.vertices:
+                exit("One of the polygons has got a duplicate vertex in the vertex list. This is not allowed!")
