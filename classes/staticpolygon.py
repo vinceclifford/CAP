@@ -29,5 +29,6 @@ class StaticPolygon:
 
         looking_for_duplicate = set()
         for vertex in vertices:
-            if vertex in self.vertices:
+            if vertex in looking_for_duplicate:
                 exit("One of the polygons has got a duplicate vertex in the vertex list. This is not allowed!")
+            looking_for_duplicate.add(vertex)
