@@ -163,6 +163,7 @@ def dijkstra_on_tensor_with_array(tensor, start, goal, width, height):
         if coordinate_tuple == goal:
             shortest_path = []
             while coordinate_tuple != (-1, -1): 
+                #TODO We still have to abort if the tuple cost is torch.finfo(torch.float32).max    
                 shortest_path.append(coordinate_tuple)
                 coordinate_tuple = (lookup_array[1, coordinate_tuple[1], coordinate_tuple[0]], lookup_array[2, coordinate_tuple[1] , coordinate_tuple[0]])
                 
@@ -208,6 +209,8 @@ def dijkstra_on_nparray_with_dictionary(tensor, start, goal, width, height):
         if coordinate_tuple == goal:
             shortest_path = []
             while coordinate_tuple != (-1, -1): 
+                if(np_array[coordinate_tuple[1], coordinate_tuple[0]] == torch.finfo(torch.float32).max): 
+                    exit("No path to the goal that does not collide with obstacle")
                 shortest_path.append(coordinate_tuple)
                 _, parent = distances[coordinate_tuple]
                 coordinate_tuple = parent
@@ -228,7 +231,7 @@ def dijkstra_on_nparray_with_dictionary(tensor, start, goal, width, height):
     return None, float('inf')
 
 
-def dijkstra_on_nparray_with_dictionary_without_detach(tensor, start, goal, width, height): 
+def dijkstra_on_nparray_with_dictionary_without_detach(tensor, start, goal): 
     """Summary of dijkstra_on_tensor_with_tensor(): Instead of performing Dijkstras Algorithm on an actual graph, we will emulate a graph. In practice this means not actually creating any nodes or edges. The weight of the edges to each neighbour are given by the tensor which we computed previously. The neighbour of a current node are simple the nodes to its left, right, up and down direction. Special edge cases may apply to the edges of the environment. 
 
     Args:
@@ -251,6 +254,8 @@ def dijkstra_on_nparray_with_dictionary_without_detach(tensor, start, goal, widt
         if coordinate_tuple == goal:
             shortest_path = []
             while coordinate_tuple != (-1, -1): 
+                if(np_array[coordinate_tuple[1], coordinate_tuple[0]] == torch.finfo(torch.float32).max): 
+                    exit("No path to the goal that does not collide with obstacle")
                 shortest_path.append(coordinate_tuple)
                 _, parent = distances[coordinate_tuple]
                 coordinate_tuple = parent
@@ -260,10 +265,9 @@ def dijkstra_on_nparray_with_dictionary_without_detach(tensor, start, goal, widt
         
         for direction in directions: 
             next_x, next_y = coordinate_tuple[0] + direction[0], coordinate_tuple[1] + direction[1]
-            
-            if next_x >= 0 and next_x < width and next_y >= 0 and next_y < height: 
+            if next_x >= 0 and next_x < tensor.size(1) and next_y >= 0 and next_y < tensor.size(0): 
                 distance = cost + np_array[next_y, next_x]
-                
+                                              
                 if (next_x, next_y) not in distances or distance < distances[(next_x, next_y)][0]: 
                     distances[(next_x, next_y)] = distance, coordinate_tuple
                     heapq.heappush(priority_queue, (distance, (next_x, next_y)))
@@ -285,6 +289,8 @@ def dijkstra_on_nparray_with_array(tensor, start, goal, width, height):
         if coordinate_tuple == goal:
             shortest_path = []
             while coordinate_tuple != (-1, -1): 
+                if(np_array[coordinate_tuple[1], coordinate_tuple[0]] == torch.finfo(torch.float32).max): 
+                    exit("No path to the goal that does not collide with obstacle")
                 shortest_path.append(coordinate_tuple)
                 coordinate_tuple = (lookup_array[1, coordinate_tuple[1], coordinate_tuple[0]], lookup_array[2, coordinate_tuple[1] , coordinate_tuple[0]])
                 
@@ -322,7 +328,10 @@ def dijkstra_on_nparray_with_two_array(tensor, start, goal, width, height):
         # We expand the goal node, therefore we are finished and simply need to construct the path via the lookup_table
         if coordinate_tuple == goal:
             shortest_path = []
-            while coordinate_tuple != (-1, -1): 
+            while coordinate_tuple != (-1, -1):
+                if(np_array[coordinate_tuple[1], coordinate_tuple[0]] == torch.finfo(torch.float32).max): 
+                    exit("No path to the goal that does not collide with obstacle")
+                    
                 shortest_path.append(coordinate_tuple)
                 coordinate_tuple = (parent_array[0, coordinate_tuple[1], coordinate_tuple[0]], parent_array[1, coordinate_tuple[1] , coordinate_tuple[0]])
                 

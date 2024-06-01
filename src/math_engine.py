@@ -5,7 +5,7 @@ import numpy as np
 from scipy.optimize import minimize
 from functools import partial 
 
-SIGMA_ZERO = 100    
+SIGMA_ZERO = 50    
 DELTA_FOR_ZERO = 1
 
 def preprocessing(target, obstacles, width, height): 
@@ -109,7 +109,7 @@ def calculate_attraction(robot, target, alpha=1, temp=1):
         robot_with_delta = copy.deepcopy(robot)
         robot_with_delta.vektor = (robot.vektor[0] + DELTA_FOR_ZERO, robot.vektor[1] + DELTA_FOR_ZERO)
         return calculate_attraction(robot_with_delta, target, alpha, temp)
-    if (distance_val/temp) <= SIGMA_ZERO: 
+    if (distance_val/temp)<= SIGMA_ZERO: 
         return 0.5 * target.attraction * (distance_val ** 2) / (alpha * temp)
     return (target.attraction * distance(robot.vektor, target.vektor) / 100 * SIGMA_ZERO - 0.5 * target.attraction * SIGMA_ZERO * SIGMA_ZERO) / (alpha * temp)
 

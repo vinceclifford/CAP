@@ -1,8 +1,8 @@
 from shapely.geometry import Polygon, Point
 
-class Static_Polygon: 
-    
-   
+
+class Static_Polygon:
+
     def __init__(self, vertices, distance_of_influence, attraction, no_interference=10) -> None:
         """
         Args:
@@ -13,16 +13,29 @@ class Static_Polygon:
             no_interference (int, optional): Distance around polygon that the robot must not interfere with the polygon. Defaults to 10.
         """
         self.distance_of_influence = distance_of_influence
-        self.attraction = attraction 
+        self.attraction = attraction
         self.vertices = vertices
-        #self.polygon = Polygon(vertices)
+        self.polygon = Polygon(vertices)
         self.no_interference = no_interference
-         
-        """
+        self.x_max = vertices[0][0]
+        self.y_max = vertices[0][1]
+        self.x_min = vertices[0][0]
+        self.y_min = vertices[0][1]
+
+        for vertex in vertices:
+            if vertex[0] < self.x_min:
+                self.x_min = vertex[0]
+            if vertex[0] > self.x_max:
+                self.x_max = vertex[0]
+
+            if vertex[1] < self.y_min:
+                self.y_min = vertex[1]
+            if vertex[1] > self.y_max:
+                self.y_max = vertex[1]
+
+    """  
     def distance(self, x_robot, y_robot): 
         point = Point(x_robot, y_robot)
         distance = point.distance(self.polygon)
         return distance
         """
-            
-        

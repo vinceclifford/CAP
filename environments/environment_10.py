@@ -31,14 +31,7 @@ obstacles = {
     obstacle_7,
     obstacle_8, 
     obstacle_9,
-    obstacle_10,
-    obstacle_11, 
-    obstacle_12,
-    obstacle_13,
-    obstacle_14, 
-    obstacle_15,
-    obstacle_16,
-    obstacle_17
+ 
 }
 
 target = Static_Circle(700, 150, 5, 3)
