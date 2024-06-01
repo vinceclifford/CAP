@@ -1,16 +1,43 @@
 import torch
-from classes.static_polygon import Static_Polygon
-import time
 
 C_DOUBLE_PRIME = -0.001
 C = 100
 
 
-def create_potential_field_value_tensor(obstacles, target, width, height, alpha=1, temp=1):
-    """Summary of function create_tensor_repulsive_force(): This function will calculate the potential field value for the entire obstacle and store the value of each pixel (x,y) in a tensor. Calulating the potential field value function will be done through Pytorch. This will automatically result in parallel execution  
+def calculate_total_repulsive_field_value(obstacles, target, width, height, alpha=1, temp=1):
+    circle_repulsive_tensor = calculate_circle_repulsive_field_value_tensor(obstacles, width, height, alpha, temp)
+    attraction_repulsive_tensor = calculate_attraction_field_value_tensor(target, width, height, alpha, temp)
+
+    non_infinity_result = circle_repulsive_tensor + attraction_repulsive_tensor
+
+    return fill_infinite_circle_repulsive_field_value(obstacles, non_infinity_result)
+
+
+def calculate_attraction_field_value_tensor(target, width, height, alpha=1, temp=1):
+    x_layer_tensor, y_layer_tensor = create_base_tensors(width, height)
+    # We set up tensors to determine the distance between all points in the environment and the target such that we
+    # can determine the attraction force for each pixel
+    attraction_tensor = torch.stack((x_layer_tensor, y_layer_tensor), dim=2)
+    target_tensor = torch.tensor(target.vector)
+
+    # Adjust the dimesionality of target_tensor such that we can use the appropiate broadcasting functionalities
+    target_tensor.unsqueeze_(0)
+    attraction_tensor = torch.sqrt(torch.sum((attraction_tensor - target_tensor) ** 2, dim=2)) / 100
+
+    # Code for the formula given by calculate_attraction in engine_math.py: return 0.5 * target.attraction * (
+    # distance_val ** 2) / (alpha * temp)
+    coefficient = 0.5 * target.attraction / (alpha * temp)
+    attraction_tensor = coefficient * (attraction_tensor ** 2)
+    return attraction_tensor
+
+
+def calculate_circle_repulsive_field_value_tensor(obstacles, width, height, alpha=1, temp=1):
+    """Summary of function create_tensor_repulsive_force(): This function will calculate the potential field value
+    for the entire obstacle and store the value of each pixel (x,y) in a tensor. Calulating the potential field value
+    function will be done through Pytorch. This will automatically result in parallel execution
        
     Args:
-        obstacle (list): list of obstacles in given environment 
+        obstacles (list): list of obstacles in given environment
         target (static_circle): object of goal 
         width (int): width of the environment 
         height (int): height of the environment 
@@ -22,14 +49,10 @@ def create_potential_field_value_tensor(obstacles, target, width, height, alpha=
         2D-tensor: Will return a 2D tensor of the potential field value 
     """
 
-    basic_tensor_row = torch.arange(0, width + 1, dtype=torch.float32)
-    basic_tensor_column = torch.arange(0, height + 1, dtype=torch.float32)
+    x_layer_tensor, y_layer_tensor = create_base_tensors(width, height)
 
-    first_layer_tensor = basic_tensor_row.unsqueeze(0).repeat(height + 1, 1)
-    second_layer_tensor = basic_tensor_column.unsqueeze(0).repeat(width + 1, 1).t()
-
-    # 3D tensor with the dimensions (width, height,2) with x and y coordinates 
-    position_tensor = torch.stack((first_layer_tensor, second_layer_tensor), dim=2)
+    # 3D tensor with the dimensions (width, height,2) with x and y coordinates
+    position_tensor = torch.stack((x_layer_tensor, y_layer_tensor), dim=2)
 
     # 2D tensor with the x and y coordinate of each obstacle in it 
     obstacle_position_tensor = torch.empty(len(obstacles), 2)
@@ -40,7 +63,7 @@ def create_potential_field_value_tensor(obstacles, target, width, height, alpha=
     obstacle_attraction_tensor = torch.empty(len(obstacles))
 
     for index, obstacle in enumerate(obstacles):
-        obstacle_position_tensor[index] = torch.tensor(obstacle.vektor).to(obstacle_position_tensor.dtype)
+        obstacle_position_tensor[index] = torch.tensor(obstacle.vector).to(obstacle_position_tensor.dtype)
         obstacle_distance_of_influence_tensor[index] = torch.tensor(obstacle.distance_of_influence).to(
             obstacle_distance_of_influence_tensor.dtype)
         obstacle_attraction_tensor = torch.tensor(obstacle.attraction).to(obstacle_distance_of_influence_tensor.dtype)
@@ -56,9 +79,7 @@ def create_potential_field_value_tensor(obstacles, target, width, height, alpha=
 
     # After adjusting the dimensions we are now able to perform operations to determine the euclidean distance to all
     # obstacle. The distance of each position (x,y) to a respecive object j will be stored in the 4th dimenstion
-    # print(position_tensor.size()) print(obstacle_position_tensor.size())
     difference = position_tensor - obstacle_position_tensor
-    print(difference.size())
     squared = difference ** 2
 
     # Collapsing the tensor in the 4th dimension. For every object j only the euclidean distance from point (x,
@@ -73,47 +94,13 @@ def create_potential_field_value_tensor(obstacles, target, width, height, alpha=
     multiplied = squared_again * obstacle_distance_of_influence_tensor
     repulsion_tensor = 50 * torch.exp(multiplied)
     repulsion_tensor = torch.sum(0.5 * repulsion_tensor * obstacle_attraction_tensor, dim=2)
-    #print(repulsion_tensor)
 
-    # We set up tensors to determine the distance between all points in the environment and the target such that we
-    # can determine the attraction force for each pixel
-    attraction_tensor = torch.stack((first_layer_tensor, second_layer_tensor), dim=2)
-    target_tensor = torch.tensor(target.vektor)
-
-    # Adjust the dimesionality of target_tensor such that we can use the appropiate broadcasting functionalities 
-    target_tensor.unsqueeze_(0)
-    attraction_tensor = torch.sqrt(torch.sum((attraction_tensor - target_tensor) ** 2, dim=2)) / 100
-
-    # Code for the formula given by calculate_attraction in engine_math.py: return 0.5 * target.attraction * (
-    # distance_val ** 2) / (alpha * temp)
-    coefficient = 0.5 * target.attraction / (alpha * temp)
-    attraction_tensor = coefficient * (attraction_tensor ** 2)
-
-    result = attraction_tensor + repulsion_tensor
-    max_val = torch.max(result).item()
-
-    # Still have to guarantee that we don't hit an obstacle it its no_interference zone. Therefore, we need to set
-    # the potential field value in these anges to infinity. Atm I don't have a more efficient idea
-    for obstacle in obstacles:
-        x_min = max(obstacle.vektor[0] - obstacle.no_interference, 0)
-        x_max = min(width, obstacle.vektor[0] + obstacle.no_interference)
-        for x in range(x_min, x_max + 1):
-            y_min = max(obstacle.vektor[1] - obstacle.no_interference, 0)
-            y_max = min(height, obstacle.vektor[1] + obstacle.no_interference)
-            for y in range(y_min, y_max + 1):
-                diff = (torch.tensor(obstacle.vektor) - torch.tensor((x, y))).to(dtype=torch.float)
-                if torch.linalg.norm(diff).item() <= obstacle.no_interference:
-                    result[y, x] = torch.finfo(torch.float32).max
-
-    return result
+    return repulsion_tensor
 
 
 def calculate_polygon_repulsive_field_value_tensor(obstacles, width, height, alpha=1, temp=1):
-    basic_tensor_row = torch.arange(0, width + 1, dtype=torch.float32)
-    basic_tensor_column = torch.arange(0, height + 1, dtype=torch.float32)
+    x_layer_tensor, y_layer_tensor = create_base_tensors(width, height)
 
-    x_layer_tensor = basic_tensor_row.unsqueeze(0).repeat(height + 1, 1)
-    y_layer_tensor = basic_tensor_column.unsqueeze(0).repeat(width + 1, 1).t()
     len_entries = 0
     for obstacle in obstacles:
         len_entries += len(obstacle.vertices) - 1
@@ -132,10 +119,9 @@ def calculate_polygon_repulsive_field_value_tensor(obstacles, width, height, alp
             a_tensor[entries + 2 * vertex_index: entries + 2 * vertex_index + 2] = torch.tensor(vertex)
             s_tensor[entries + 2 * vertex_index: entries + 2 * vertex_index + 2] = torch.tensor(
                 next_vertex) - torch.tensor(vertex)
-            n_tensor[entries + 2 * vertex_index: entries + 2 * vertex_index + 2] = torch.tensor((-s_tensor[
-                                                                                                  entries + 2 * vertex_index + 1: entries + 2 * vertex_index + 2],
-                                                                                                 s_tensor[
-                                                                                                 entries + 2 * vertex_index: entries + 2 * vertex_index + 1]))
+            n_tensor[entries + 2 * vertex_index: entries + 2 * vertex_index + 2] = torch.tensor((-s_tensor[entries + 2 *
+                vertex_index + 1: entries + 2 * vertex_index + 2],s_tensor[entries + 2 * vertex_index: entries + 2 *
+                vertex_index + 1]))
 
         amount_edges = (len(obstacle.vertices) - 1)
         if max_edges_for_obstacle < amount_edges:
@@ -182,6 +168,23 @@ def calculate_polygon_repulsive_field_value_tensor(obstacles, width, height, alp
     # filtered_tensor = torch.where(collapsed == 2, torch.tensor(0), collapsed[])
 
 
+def fill_infinite_circle_repulsive_field_value(obstacles, tensor):
+    # Still have to guarantee that we don't hit an obstacle it its no_interference zone. Therefore, we need to set
+    # the potential field value in these anges to infinity. Atm I don't have a more efficient idea
+    for obstacle in obstacles:
+        x_min = max(obstacle.vector[0] - obstacle.no_interference, 0)
+        x_max = min(tensor.size(1), obstacle.vector[0] + obstacle.no_interference)
+        for x in range(x_min, x_max + 1):
+            y_min = max(obstacle.vector[1] - obstacle.no_interference, 0)
+            y_max = min(tensor.size(0), obstacle.vector[1] + obstacle.no_interference)
+            for y in range(y_min, y_max + 1):
+                diff = (torch.tensor(obstacle.vector) - torch.tensor((x, y))).to(dtype=torch.float)
+                if torch.linalg.norm(diff).item() <= obstacle.no_interference:
+                    tensor[y, x] = torch.finfo(torch.float32).max
+
+    return tensor
+
+
 def fill_infinite_polygon_repulsive_field_value(obstacles, tensor):
     for x in range(0, tensor.size(1) + 1):
         for y in range(0, tensor.size(0) + 1):
@@ -213,153 +216,11 @@ def fill_infinite_polygon_repulsive_field_value(obstacles, tensor):
     return tensor
 
 
-    """mins = [] 
-    for i in range(0, (width + 1) * (height + 1)): 
-        for j in range(len(offsets) - 1): 
-            slice_start = i * len_entries + offsets[j]
-            slice_end = i * len_entries + offsets[j + 1]
-            slice_values = reshaped_i_s[slice_start:slice_end]
-        
-            # Filter for values between 0 and 1
-            filtered_values = slice_values[(slice_values >= 0) & (slice_values <= 1)]
-        
-            # Find the minimum value in the filtered slice
-            if filtered_values.size(0) == 0: 
-                mins.append(torch.tensor(-1))
-            else: 
-                mins.append(torch.min(filtered_values)) 
+def create_base_tensors(width, height):
+    basic_tensor_row = torch.arange(0, width + 1, dtype=torch.float32)
+    basic_tensor_column = torch.arange(0, height + 1, dtype=torch.float32)
 
-            # TODO Should already compute the distance here. 
-            # Append the minimum value to the list
-        
-         #print(f"The size of the i vektor is: {i_s.size()}")
-    #print(y_layer_tensor.size())
-    #print(n_y_tensor.size())
-    """
+    x_layer_tensor = basic_tensor_row.unsqueeze(0).repeat(height + 1, 1)
+    y_layer_tensor = basic_tensor_column.unsqueeze(0).repeat(width + 1, 1).t()
 
-
-def calculate_repulsive_force_singular_polygon_vektor(obstacles, point):
-    edge_tensor_collection = []
-    norm_tensor_collection = []
-    a_point_tensor_collection = []
-    p_point_tensor_collection = []
-    storing_rows_of_obstacles = ()
-
-    for index, obstacle in enumerate(obstacles):
-        length_tensor = len(obstacle.vertices) - 1
-        storing_rows_of_obstacles = storing_rows_of_obstacles + (length_tensor,)
-        edge_tensor = torch.empty(size=(length_tensor, 2), dtype=torch.float32)
-        norm_tensor = torch.empty(size=(length_tensor, 2), dtype=torch.float32)
-        a_point_tensor = torch.empty(size=(length_tensor, 2), dtype=torch.float32)
-        p_point_tensor = torch.flatten(torch.tensor(point)).repeat(length_tensor)
-
-        for index in range(0, len(obstacle.vertices) - 1):
-            point_a = torch.tensor(obstacle.vertices[index])
-            edge_tensor[index] = torch.tensor(obstacle.vertices[index + 1]) - point_a
-            norm_tensor[index] = torch.tensor((-edge_tensor[index, 1], edge_tensor[index, 0]))
-            a_point_tensor[index] = point_a
-
-        a_point_tensor = torch.flatten(a_point_tensor)
-        edge_tensor = torch.flatten(edge_tensor)
-        norm_tensor = torch.flatten(norm_tensor)
-
-        edge_tensor_collection.append(edge_tensor)
-        a_point_tensor_collection.append(a_point_tensor)
-        p_point_tensor_collection.append(p_point_tensor)
-        norm_tensor_collection.append(norm_tensor)
-
-    a_point_tensor = torch.cat(a_point_tensor_collection)
-    p_point_tensor = torch.cat(p_point_tensor_collection)
-    #print(p_point_tensor)
-    edge_tensor = torch.cat(edge_tensor_collection)
-    norm_tensor = torch.cat(norm_tensor_collection)
-
-    b = torch.t(p_point_tensor - a_point_tensor)
-    edge_tensor_reshaped = torch.stack((edge_tensor, -norm_tensor), dim=1).reshape(-1, 2, 2)
-    block_matrices = [torch.tensor(block) for block in edge_tensor_reshaped]
-
-    A = torch.block_diag(*block_matrices)
-    #print(A)
-
-    solution_b = torch.linalg.solve(A, b)
-    i_s = solution_b[::2]
-
-    accumulated = 0
-    solution_value = ()
-    #print(solution_b)
-
-    for i in range(len(obstacles)):
-        offset = storing_rows_of_obstacles[i]
-        sub_solution = i_s[accumulated:accumulated + offset]
-        filtered = sub_solution[(sub_solution >= 0) & (sub_solution <= 1)]
-
-        x = obstacles[i].vertices
-        obstacle_tensor = torch.tensor(obstacles[i].vertices)
-        p_point_tensor = torch.tensor(point).repeat(len(obstacles[i].vertices)).reshape(-1, 2)
-
-        if filtered.size(0) == 0:
-            #print(obstacle_tensor)
-            #print(p_point_tensor[:offset+ 1].size())
-            #print(p_point_tensor[:offset+ 1])
-            solution_value += (
-                torch.min(torch.sqrt(torch.sum((obstacle_tensor - p_point_tensor[:offset + 1]) ** 2, dim=1))).item(),)
-            continue
-
-        min_index = torch.argmin(filtered)
-        z = solution_b[2 * offset + min_index * 2 + 1]
-        x = norm_tensor[2 * offset + 2 * min_index:2 * offset + 2 * min_index + 2]
-        distance = torch.linalg.norm(solution_b[2 * offset + min_index * 2 + 1].item() * norm_tensor[
-                                                                                         2 * offset + 2 * min_index:2 * offset + 2 * min_index + 2])
-        accumulated += offset
-        solution_value += (distance.item(),)
-
-    return solution_value
-
-
-def main_2():
-    obstacle_1 = Static_Polygon([(10, 10), (10, 610), (10, 610)], 5, 3, no_interference=2)
-    obstacle_2 = Static_Polygon([(130, 10), (130, 610), (130, 610)], 5, 3, no_interference=2)
-    obstacle_3 = Static_Polygon([(250, 10), (250, 610), (250, 610)], 5, 3, no_interference=2)
-    obstacle_4 = Static_Polygon([(10, 10), (250, 10), (250, 10)], 5, 3, no_interference=2)
-    obstacle_5 = Static_Polygon([(260, 10), (260, 610), (260, 610)], 5, 3, no_interference=2)
-    obstacle_6 = Static_Polygon([(400, 10), (400, 610), (400, 610)], 5, 3, no_interference=2)
-    obstacle_7 = Static_Polygon([(260, 300), (400, 300), (400, 300)], 5, 3, no_interference=2)
-    obstacle_8 = Static_Polygon([(260, 10), (400, 10), (400, 10)], 5, 3, no_interference=2)
-    obstacle_9 = Static_Polygon([(410, 10), (600, 10), (600, 10)], 5, 3, no_interference=2)
-    obstacle_10 = Static_Polygon([(410, 10), (410, 610), (410, 610)], 5, 3, no_interference=2)
-    obstacle_11 = Static_Polygon([(410, 300), (600, 300), (600, 300)], 5, 3, no_interference=2)
-    obstacle_12 = Static_Polygon([(600, 10), (600, 300), (600, 300)], 5, 3, no_interference=2)
-    obstacle_13 = Static_Polygon([(610, 10), (790, 10), (790, 10)], 5, 3, no_interference=2)
-    obstacle_14 = Static_Polygon([(610, 10), (610, 300), (610, 300)], 5, 3, no_interference=2)
-    obstacle_15 = Static_Polygon([(610, 300), (790, 300), (790, 300)], 5, 3, no_interference=2)
-    obstacle_16 = Static_Polygon([(790, 300), (790, 630), (790, 630)], 5, 3, no_interference=2)
-    obstacle_17 = Static_Polygon([(790, 630), (10, 630), (10, 630)], 5, 3, no_interference=2)
-
-    obstacles = [
-        obstacle_1,
-        obstacle_2,
-        obstacle_3,
-        obstacle_4,
-        obstacle_5,
-        obstacle_6,
-        obstacle_7,
-        obstacle_8,
-        obstacle_9,
-        obstacle_10,
-        obstacle_11,
-        obstacle_12,
-        obstacle_13,
-        obstacle_14,
-        obstacle_15,
-        obstacle_16,
-        obstacle_17
-    ]
-
-    s_time = time.time()
-
-    res = calculate_polygon_repulsive_field_value_tensor(obstacles, 800, 640)
-    e_time = time.time()
-
-    print(f"It took {e_time - s_time} seconds")
-    print(res)
-
+    return x_layer_tensor, y_layer_tensor
