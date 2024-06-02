@@ -1,7 +1,8 @@
 import pygame
 import time
 from dijkstra import dijkstra_on_nparray_with_dictionary_without_detach
-from visualization_engine import draw_robot, draw_obstacles, visualizing_dijkstra, check_validity_of_obstacles, SCREEN_WIDTH, SCREEN_HEIGHT, GREY, BLACK, RED, PURPLE, visualization_heat_map_tensor
+from visualization_engine import draw_robot, draw_obstacles, visualizing_dijkstra, check_validity_of_obstacles, \
+    SCREEN_WIDTH, SCREEN_HEIGHT, GREY, BLACK, RED, PURPLE, visualization_heat_map_tensor
 from environments.environment_1 import obstacles, agent, target
 from math_tensor import calculate_total_repulsive_field_value
 
@@ -15,11 +16,11 @@ def main():
     clock = pygame.time.Clock()
 
     if SCREEN_WIDTH <= 0:
-        exit("A non positive Screen width was entered")
+        exit("A non positive Screen width was entered!")
 
     draw_robot(screen, agent, BLACK, 5)
     draw_robot(screen, target, RED, 10)
-    draw_obstacles(screen, obstacles, PURPLE, 7)
+    draw_obstacles(screen, obstacles, PURPLE)
     pygame.display.flip()
 
     tensor = calculate_total_repulsive_field_value(obstacles, target, SCREEN_WIDTH, SCREEN_HEIGHT)
@@ -29,14 +30,15 @@ def main():
     visualizing_dijkstra(screen, path)
     visualization_heat_map_tensor(tensor)
 
-    diff = finishing_time - starting_time
-    print(f"Computational time at {diff}")
+    # diff = finishing_time - starting_time
+    # print(f"Computational time at {diff}")
     while True:
         done = False
         while not done:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     done = True
+
 
 """
 def main_2():
@@ -47,8 +49,6 @@ def main_2():
     tensor = tensor.unsqueeze(0).repeat(640 + 1, 1)
     tensor = fill_infinite_polygon_repulsive_field_value([obstacle_2], tensor)
     visualization_heat_map_tensor(tensor)"""
-
-
 
 """
 def main_2():
@@ -98,7 +98,6 @@ def main_2():
     print(f"It took {e_time - s_time} seconds")
     print(res)
 """
-
 
 if __name__ == "__main__":
     main()

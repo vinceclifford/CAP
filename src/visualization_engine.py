@@ -8,13 +8,12 @@ from classes.staticcircle import StaticCircle
 from classes.staticpolygon import StaticPolygon
 from math_engine import calculate_potential_field_value_temperature
 from functools import partial
-from environments.environment_1 import obstacles, target
 import torch
 
-SCREEN_WIDTH = 800
+SCREEN_WIDTH = 550
 DELTA = 5
 STEP_SIZE = 1
-SCREEN_HEIGHT = 640
+SCREEN_HEIGHT = 550
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
@@ -34,7 +33,7 @@ def draw_robot(screen, robot, color, radius):
     pygame.draw.circle(screen, color, (int(robot.vector[0]), int(robot.vector[1])), radius)
 
 
-def draw_obstacles(screen, obstacles, color, radius):
+def draw_obstacles(screen, obstacles, color):
     """Summary of function draw_obstacles(): Will draw all obstacles on screen for visualization purposes. 
     Depending on whether the obstacle is a polygon or circle a different obstacle will be rendered
 
@@ -44,12 +43,12 @@ def draw_obstacles(screen, obstacles, color, radius):
 
     for entry in obstacles:
         if isinstance(entry, StaticCircle):
-            pygame.draw.circle(screen, color, (int(entry.vector[0]), int(entry.vector[1])), radius)
+            pygame.draw.circle(screen, color, (int(entry.vector[0]), int(entry.vector[1])), entry.no_interference)
         elif isinstance(entry, StaticPolygon):
             pygame.draw.polygon(screen, PURPLE, entry.vertices, width=0)
 
 
-def visualization_heat_map(alpha, temp):
+def visualization_heat_map(alpha, temp, target, obstacles):
     """Summary of visualization_heat_map(): Will display a heat map of the potential field value function 
 
     Args:
@@ -107,7 +106,7 @@ def visualization_heat_map_tensor(tensor, alpha=1, temp=1):
     plt.show()
 
 
-def visualizaion_3d_function(alpha, temp):
+def visualizaion_3d_function(alpha, temp, target, obstacles):
     """Summary of visualizaion_3d_function: Will create a 3D function. This visualized function will receive two
     inputs, the coordinates of the robot, and will calculate the potential field value.
 
@@ -155,3 +154,11 @@ def check_validity_of_obstacles(obstacles):
             1] >
                 SCREEN_HEIGHT):
             exit("One of the obstacles is not in the bounds of our environment!")
+
+    looking_for_duplicate = set()
+    for obstacle in obstacles:
+        if isinstance(obstacle, StaticPolygon):
+            for vertex in obstacle.vertices:
+                if vertex in looking_for_duplicate:
+                    exit("One of the polygons has got a duplicate vertex in the vertex list. This is not allowed!")
+                looking_for_duplicate.add(vertex)
