@@ -1,6 +1,8 @@
 import torch
+import time
 from classes.staticpolygon import StaticPolygon
 from classes.staticcircle import StaticCircle
+
 
 C_DOUBLE_PRIME = -0.001
 C = 100
@@ -16,12 +18,24 @@ def calculate_total_repulsive_field_value(obstacles, target, width, height, alph
         elif isinstance(obstacle, StaticCircle):
             circle_obstacle_list.append(obstacle)
 
-    circle_repulsive_tensor = calculate_circle_distance_tensor(circle_obstacle_list, width, height, alpha, temp)
+    polygon_distance_tensor = None
+    if len(circle_obstacle_list) != 0:
+        circle_distance_tensor = calculate_circle_distance_tensor(circle_obstacle_list, width, height, alpha, temp)
+    if len(polygon_obstacle_list) != 0:
+        polygon_distance_tensor = calculate_polygon_distance_tensor(polygon_obstacle_list, width, height, alpha, temp)
+
     attraction_repulsive_tensor = calculate_attraction_field_value_tensor(target, width, height, alpha, temp)
 
-    non_infinity_result = circle_repulsive_tensor + attraction_repulsive_tensor
+    if len(circle_obstacle_list) != 0:
+        attraction_repulsive_tensor += calculate_repulsive_field_value(circle_distance_tensor, circle_obstacle_list)
 
-    return fill_infinite_circle_repulsive_field_value(obstacles, non_infinity_result)
+    if len(polygon_obstacle_list) != 0:
+        attraction_repulsive_tensor += calculate_repulsive_field_value(polygon_distance_tensor, polygon_obstacle_list)
+
+    intermed = fill_infinite_circle_repulsive_field_value(circle_obstacle_list, attraction_repulsive_tensor)
+    result = fill_infinite_polygon_repulsive_field_value(polygon_obstacle_list, intermed, polygon_distance_tensor)
+
+    return result
 
 
 def calculate_attraction_field_value_tensor(target, width, height, alpha=1, temp=1):
@@ -45,7 +59,7 @@ def calculate_attraction_field_value_tensor(target, width, height, alpha=1, temp
     return attraction_tensor
 
 
-def calculate_repulsive_field_value(distance_tensor, obstacles, width, height, alpha=1, temp=1):
+def calculate_repulsive_field_value(distance_tensor, obstacles, alpha=1, temp=1):
     # 1D tensor which will only store the attraction values of each individual obstacle. The order of the obstacles
     # in  obstacle_position_tensor and obstacle_attraction_tensor must be the same.
     obstacle_distance_of_influence_tensor = torch.empty(len(obstacles))
@@ -122,20 +136,12 @@ def calculate_circle_distance_tensor(obstacles, width, height, alpha=1, temp=1):
     # Collapsing the tensor in the 4th dimension. For every object j only the euclidean distance from point (x,
     # y) to it will be stored in the cell (x,y,j)
     sum = torch.sum(squared, dim=3)
-    sqrt = torch.sqrt(sum)
+    result = torch.sqrt(sum)
 
-    alpha_temp = sqrt / (alpha * temp)
-    squared_again = alpha_temp ** 2
-
-    # Cellwise multiplication to adjust for attraction_forces. Afterwards we will collapse the tensor into two dimension
-    multiplied = squared_again * obstacle_distance_of_influence_tensor
-    repulsion_tensor = 50 * torch.exp(multiplied)
-    repulsion_tensor = torch.sum(0.5 * repulsion_tensor * obstacle_attraction_tensor, dim=2)
-
-    return repulsion_tensor
+    return result
 
 
-def calculate_polygon_repulsive_field_value_tensor(obstacles, width, height, alpha=1, temp=1):
+def calculate_polygon_distance_tensor(obstacles, width, height, alpha=1, temp=1):
     x_layer_tensor, y_layer_tensor = create_base_tensors(width, height)
     stacked_tensor = torch.stack((x_layer_tensor, y_layer_tensor, x_layer_tensor, y_layer_tensor), dim=2)
 
@@ -263,11 +269,15 @@ def calculate_polygon_repulsive_field_value_tensor(obstacles, width, height, alp
     filtered_tensor = torch.where((i_s_reshaped >= 0) & (i_s_reshaped <= 1), distances_edge_reshaped, distances_vertex_reshaped)
 
     min_distance_tensor, _ = torch.min(filtered_tensor, dim=3)
+    return min_distance_tensor
 
 
 def fill_infinite_circle_repulsive_field_value(obstacles, tensor):
     # Still have to guarantee that we don't hit an obstacle it its no_interference zone. Therefore, we need to set
     # the potential field value in these anges to infinity. Atm I don't have a more efficient idea
+    if len(obstacles) == 0:
+        return tensor
+
     for obstacle in obstacles:
         x_min = max(obstacle.vector[0] - obstacle.no_interference, 0)
         x_max = min(tensor.size(1), obstacle.vector[0] + obstacle.no_interference)
@@ -282,13 +292,23 @@ def fill_infinite_circle_repulsive_field_value(obstacles, tensor):
     return tensor
 
 
-def fill_infinite_polygon_repulsive_field_value(obstacles, tensor):
-    for x in range(0, tensor.size(1) + 1):
-        for y in range(0, tensor.size(0) + 1):
-            for o in obstacles:
+def fill_infinite_polygon_repulsive_field_value(obstacles, tensor, min_distance_tensor):
+    if len(obstacles) == 0:
+        return tensor
+
+    np_min_dist = min_distance_tensor.detach().numpy()
+
+    for x in range(0, tensor.size(1)):
+        for y in range(0, tensor.size(0)):
+            for index, o in enumerate(obstacles):
                 # Bounding box check
-                if x > o.x_max or x < o.x_min or y > o.y_max or y < o.y_min:
+                if x > o.x_max + o.no_interference or x < o.x_min - o.no_interference or y > o.y_max + o.no_interference or y < o.y_min - o.no_interference:
                     continue
+
+                if np_min_dist[y,x,index] <= o.no_interference:
+                    tensor[y, x] = torch.finfo(torch.float32).max
+                    break
+
 
                 counter = 0
                 for i in range(len(o.vertices)):
@@ -310,6 +330,7 @@ def fill_infinite_polygon_repulsive_field_value(obstacles, tensor):
                     tensor[y, x] = torch.finfo(torch.float32).max
                     break
 
+
     return tensor
 
 
@@ -321,10 +342,3 @@ def create_base_tensors(width, height):
     y_layer_tensor = basic_tensor_column.unsqueeze(0).repeat(width + 1, 1).t()
 
     return x_layer_tensor, y_layer_tensor
-
-
-if __name__ == "__main__":
-    obstacle_1 = StaticPolygon([(1, 1), (5, 1)], 5, 3, no_interference=2)
-    obstacle_2 = StaticPolygon([(1, 3), (5, 3), (5, 5)], 5, 3, no_interference=2)
-
-    calculate_polygon_repulsive_field_value_tensor([obstacle_1], 7, 6)

@@ -1,6 +1,6 @@
 class StaticPolygon:
 
-    def __init__(self, vertices, distance_of_influence, attraction, no_interference=10) -> None:
+    def __init__(self, vertices, distance_of_influence, attraction, no_interference=3) -> None:
         """
         Args: vertices (list): list of tuples with two entries each. A x and a y coordinate distance_of_influence (
         int): Until which distance does attraction (int): How much influence does the polygon got. A "typical" value

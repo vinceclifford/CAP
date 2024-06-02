@@ -3,7 +3,7 @@ import time
 from dijkstra import dijkstra_on_nparray_with_dictionary_without_detach
 from visualization_engine import draw_robot, draw_obstacles, visualizing_dijkstra, check_validity_of_obstacles, \
     SCREEN_WIDTH, SCREEN_HEIGHT, GREY, BLACK, RED, PURPLE, visualization_heat_map_tensor
-from environments.environment_1 import obstacles, agent, target
+from environments.environment_7 import obstacles, agent, target
 from math_tensor import calculate_total_repulsive_field_value
 
 
@@ -23,15 +23,15 @@ def main():
     draw_obstacles(screen, obstacles, PURPLE)
     pygame.display.flip()
 
+    s_time = time.time()
     tensor = calculate_total_repulsive_field_value(obstacles, target, SCREEN_WIDTH, SCREEN_HEIGHT)
-    starting_time = time.time()
     path, _ = dijkstra_on_nparray_with_dictionary_without_detach(tensor, agent.vector, target.vector)
-    finishing_time = time.time()
+    f_time = time.time()
     visualizing_dijkstra(screen, path)
+    diff = f_time - s_time
+    print(f"The time it took is {diff} seconds")
     visualization_heat_map_tensor(tensor)
 
-    # diff = finishing_time - starting_time
-    # print(f"Computational time at {diff}")
     while True:
         done = False
         while not done:

@@ -10,10 +10,10 @@ from math_engine import calculate_potential_field_value_temperature
 from functools import partial
 import torch
 
-SCREEN_WIDTH = 550
+SCREEN_WIDTH = 800
 DELTA = 5
 STEP_SIZE = 1
-SCREEN_HEIGHT = 550
+SCREEN_HEIGHT = 640
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
@@ -45,7 +45,10 @@ def draw_obstacles(screen, obstacles, color):
         if isinstance(entry, StaticCircle):
             pygame.draw.circle(screen, color, (int(entry.vector[0]), int(entry.vector[1])), entry.no_interference)
         elif isinstance(entry, StaticPolygon):
-            pygame.draw.polygon(screen, PURPLE, entry.vertices, width=0)
+            if len(entry.vertices) == 2:
+                pygame.draw.line(screen, PURPLE, entry.vertices[0], entry.vertices[1], width=2)
+            else:
+                pygame.draw.polygon(screen, PURPLE, entry.vertices, width=0)
 
 
 def visualization_heat_map(alpha, temp, target, obstacles):
@@ -97,7 +100,6 @@ def visualization_heat_map_tensor(tensor, alpha=1, temp=1):
     np_array = tensor.numpy()
 
     max = np.max(np_array[np.logical_and(np.isfinite(np_array), np_array < torch.finfo(torch.float32).max)])
-    print(max)
     sns.heatmap(np_array, cmap='viridis', vmax=max)
     plt.title('Heatmap of Robot')
     plt.xlabel('x coordinate')
@@ -150,15 +152,16 @@ def visualizing_dijkstra(screen, path_points):
 
 def check_validity_of_obstacles(obstacles):
     for obstacle in obstacles:
-        if (obstacle.vector[0] < 0 or obstacle.vector[0] > SCREEN_WIDTH or obstacle.vector[1] < 0 or obstacle.vector[
-            1] >
-                SCREEN_HEIGHT):
-            exit("One of the obstacles is not in the bounds of our environment!")
-
-    looking_for_duplicate = set()
-    for obstacle in obstacles:
-        if isinstance(obstacle, StaticPolygon):
+        if isinstance(obstacles, StaticCircle):
+            if obstacle.vector[0] < 0 or obstacle.vector[0] > SCREEN_WIDTH or obstacle.vector[1] < 0 or obstacle.vector[1] > SCREEN_HEIGHT:
+                exit("One of the circle obstacles is not in the bounds of our environment!")
+            else:
+                pass
+        elif isinstance(obstacle, StaticPolygon):
+            looking_for_duplicate = set()
             for vertex in obstacle.vertices:
                 if vertex in looking_for_duplicate:
                     exit("One of the polygons has got a duplicate vertex in the vertex list. This is not allowed!")
+                if vertex[0] < 0 or vertex[0] > SCREEN_WIDTH or vertex[1] < 0 or vertex[1] >SCREEN_HEIGHT:
+                    exit("One of the polygon vertices is not in the bounds of our environment!")
                 looking_for_duplicate.add(vertex)
