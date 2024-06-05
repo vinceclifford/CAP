@@ -2,6 +2,20 @@ from classes.node import Node
 
 
 def construct_graph_from_tensor(tensor, start, goal, width, height):
+    """
+
+    Args:
+        tensor (torch.list): tensor of the potential field values for given environment.
+        start (int, int): starting coordinates of robot.
+        goal (int, int): goal coordinates / operating table coordinates.
+        width (int): width of the environment.
+        height (int): height of the environment.
+
+    Returns:
+        (node, node): Returns the starting and goal node of the graph. We only need these two. All other nodes
+        will be explored via the edges.
+
+    """
     directions = [(1, 0), (-1, 0), (0, -1), (0, 1)]
     map_koordinates_to_node = {}
     for x in range(0, width):

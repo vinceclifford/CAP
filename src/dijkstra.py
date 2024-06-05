@@ -5,17 +5,19 @@ from src.construct_graph import construct_graph_from_tensor
 
 
 def dijkstra(start, end):
-    """Summary dijkstra(): Will return the shortest path with regards to the previously computed potential field value. 
+    """
+    Summary of dijkstra(): Will return the shortest path in regard to the previously computed potential field value.
 
     Args:
-        start (node): Starting node 
-        end (node): Goal node 
+        start (node): Starting node.
+        end (node): Goal node.
 
-    Returns: (list, cost): Will the return the path in a list of tuples corresponding to the x andd y value. The
-    total cost of the path will also be returned
+    Returns:
+        (list, cost): Will the return the path in a list of tuples corresponding to the x and y value. The
+        total cost of the path will also be returned.
     """
 
-    # Dictionary that maps node to it's current cost and parent node that expanded that node 
+    # Dictionary that maps node to its current cost and parent node that expanded that node
     distances = {start: (0, None)}
 
     # Set to store all already visited nodes
@@ -42,7 +44,7 @@ def dijkstra(start, end):
             distance = current_distance + weight
 
             # If we have not visited the neighbor, we need to visit him again. If we have already visited the node
-            # and find a shorter path to him, we need to update the path accrodingly.
+            # and find a shorter path to him, we need to update the path accordingly.
             if neighbor not in visited or distance < distances[neighbor][0]:
                 distances[neighbor] = distance, current_node
                 visited.add(neighbor)
@@ -53,22 +55,43 @@ def dijkstra(start, end):
 
 
 def dijkstra_on_graph_with_dictionary(tensor, start, goal):
+    """
+    Summary of dijkstra_on_graph_with_dictionary(): Will return the shortest path with the given potential field value
+    tensor.
+
+    Args:
+        tensor (torch.Tensor): 2D tensor representing the potential field.
+        start (int, int): vector of the starting coordinates of the robot.
+        goal (int, int): vector of the goal coordinates of the environment / operating room.
+
+    Returns:
+        (list, cost): Will the return the path in a list of tuples corresponding to the x and y value of the path
+        planning problem from starting coordinates to goal coordinates.
+    """
+
     start_node, goal_node = construct_graph_from_tensor(tensor, start, goal, tensor.size(1), tensor.size(0))
     return dijkstra(start_node, goal_node)
 
 
 def dijkstra_on_tensor_with_tensor(tensor, start, goal):
-    """Summary of dijkstra_on_tensor_with_tensor(): Instead of performing Dijkstras Algorithm on an actual graph,
+    """
+    Summary of dijkstra_on_tensor_with_tensor(): Instead of performing Dijkstra's Algorithm on an actual graph,
     we will emulate a graph. In practice this means not actually creating any nodes or edges. The weight of the edges
     to each neighbour are given by the tensor which we computed previously. The neighbour of a current node are
     simple the nodes to its left, right, up and down direction. Special edge cases may apply to the edges of the
-    environment.
+    environment. A tensor is used for storing already visited nodes, and we perform the lookup of the values on a
+    tensor.
 
     Args:
-        tensor ("torch.Tensor): 2D Tensor of the potetial field value function. 
-        start (int, int): x and y coordinate of starting position 
-        goal (int, int): y and y position of goal position
+        tensor (torch.Tensor): 2D Tensor of the potential field value function.
+        start (int, int): x and y coordinate of starting position.
+        goal (int, int): y and y position of goal position.
+
+    Returns:
+        (list, cost): Will the return the path in a list of tuples corresponding to the x and y value of the path
+        planning problem from starting coordinates to goal coordinates.
     """
+
     size = tuple(tensor.size())
     parent_tensor = torch.full(tuple(size) + (2,), -1, dtype=torch.int32)
     cost_tensor = torch.full(size, torch.finfo(torch.float32).max)
@@ -115,17 +138,24 @@ def dijkstra_on_tensor_with_tensor(tensor, start, goal):
 
 
 def dijkstra_on_tensor_with_dictionary(tensor, start, goal):
-    """Summary of dijkstra_on_tensor_with_tensor(): Instead of performing Dijkstras Algorithm on an actual graph,
+    """
+    Summary of dijkstra_on_tensor_with_dictionary(): Instead of performing Dijkstra's Algorithm on an actual graph,
     we will emulate a graph. In practice this means not actually creating any nodes or edges. The weight of the edges
     to each neighbour are given by the tensor which we computed previously. The neighbour of a current node are
     simple the nodes to its left, right, up and down direction. Special edge cases may apply to the edges of the
-    environment.
+    environment. A dictionary is used for storing already visited nodes , and we perform the lookup of the values on a
+    tensor.
 
     Args:
-        tensor ("torch.Tensor): 2D Tensor of the potetial field value function. 
-        start (int, int): x and y coordinate of starting position 
-        goal (int, int): y and y position of goal position
+        tensor (torch.Tensor): 2D Tensor of the potential field value function.
+        start (int, int): x and y coordinate of starting position.
+        goal (int, int): y and y position of goal position.
+
+    Returns:
+        (list, cost): Will the return the path in a list of tuples corresponding to the x and y value of the path
+        planning problem from starting coordinates to goal coordinates.
     """
+
     distances = {start: (0, (-1, -1))}
     directions = [(-1, 0), (1, 0), (0, 1), (0, -1)]
 
@@ -162,6 +192,24 @@ def dijkstra_on_tensor_with_dictionary(tensor, start, goal):
 
 
 def dijkstra_on_tensor_with_array(tensor, start, goal):
+    """
+    Summary of dijkstra_on_tensor_with_array(): Instead of performing Dijkstra's Algorithm on an actual graph,
+    we will emulate a graph. In practice this means not actually creating any nodes or edges. The weight of the edges
+    to each neighbour are given by the tensor which we computed previously. The neighbour of a current node are
+    simple the nodes to its left, right, up and down direction. Special edge cases may apply to the edges of the
+    environment. An array is used for storing already visited nodes, and we perform the lookup of the values
+    on a tensor.
+
+    Args:
+        tensor (torch.Tensor): 2D Tensor of the potential field value function.
+        start (int, int): x and y coordinate of starting position.
+        goal (int, int): y and y position of goal position.
+
+    Returns:
+        (list, cost): Will the return the path in a list of tuples corresponding to the x and y value of the path
+        planning problem from starting coordinates to goal coordinates.
+    """
+
     lookup_array = np.full((3, tensor.size(0), tensor.size(1)), -1)
     lookup_array[0, start[1], start[0]] = 0
     directions = [(-1, 0), (1, 0), (0, 1), (0, -1)]
@@ -199,17 +247,24 @@ def dijkstra_on_tensor_with_array(tensor, start, goal):
 
 
 def dijkstra_on_nparray_with_dictionary(tensor, start, goal):
-    """Summary of dijkstra_on_tensor_with_tensor(): Instead of performing Dijkstras Algorithm on an actual graph,
+    """
+    Summary of dijkstra_on_array_with_array(): Instead of performing Dijkstra's Algorithm on an actual graph,
     we will emulate a graph. In practice this means not actually creating any nodes or edges. The weight of the edges
     to each neighbour are given by the tensor which we computed previously. The neighbour of a current node are
     simple the nodes to its left, right, up and down direction. Special edge cases may apply to the edges of the
-    environment.
+    environment. A dictionary is used for storing already visited nodes, and we perform the lookup of the values on
+    an array while detaching the tensor at first.
 
     Args:
-        tensor ("torch.Tensor): 2D Tensor of the potetial field value function. 
-        start (int, int): x and y coordinate of starting position 
-        goal (int, int): y and y position of goal position
+        tensor (torch.Tensor): 2D Tensor of the potential field value function.
+        start (int, int): x and y coordinate of starting position.
+        goal (int, int): y and y position of goal position.
+
+    Returns:
+        (list, cost): Will the return the path in a list of tuples corresponding to the x and y value of the path
+        planning problem from starting coordinates to goal coordinates.
     """
+
     np_array = tensor.detach().numpy()
     distances = {start: (0, (-1, -1))}
     directions = [(-1, 0), (1, 0), (0, 1), (0, -1)]
@@ -248,17 +303,24 @@ def dijkstra_on_nparray_with_dictionary(tensor, start, goal):
 
 
 def dijkstra_on_nparray_with_dictionary_without_detach(tensor, start, goal):
-    """Summary of dijkstra_on_tensor_with_tensor(): Instead of performing Dijkstras Algorithm on an actual graph,
-    we will emulate a graph. In practice this means not actually creating any nodes or edges. The weight of the edges
-    to each neighbour are given by the tensor which we computed previously. The neighbour of a current node are
-    simple the nodes to its left, right, up and down direction. Special edge cases may apply to the edges of the
-    environment.
+    """
+    Summary of dijkstra_on_array_with_dictionary_without_detach(): Instead of performing Dijkstra's Algorithm on an
+    actual graph, we will emulate a graph. In practice this means not actually creating any nodes or edges. The
+    weight of the edges to each neighbour are given by the tensor which we computed previously. The neighbour of a
+    current node are simple the nodes to its left, right, up and down direction. Special edge cases may apply to the
+    edges of the environment. A dictionary is used for storing already visited nodes, and we perform the lookup of the
+    values on an array without detaching the tensor first.
 
     Args:
-        tensor ("torch.Tensor): 2D Tensor of the potetial field value function. 
-        start (int, int): x and y coordinate of starting position 
-        goal (int, int): y and y position of goal position
+        tensor (torch.Tensor): 2D Tensor of the potential field value function.
+        start (int, int): x and y coordinate of starting position.
+        goal (int, int): y and y position of goal position.
+
+    Returns:
+        (list, cost): Will the return the path in a list of tuples corresponding to the x and y value of the path
+        planning problem from starting coordinates to goal coordinates.
     """
+
     np_array = tensor.numpy()
     distances = {start: (0, (-1, -1))}
     directions = [(-1, 0), (1, 0), (0, 1), (0, -1)]
@@ -295,7 +357,25 @@ def dijkstra_on_nparray_with_dictionary_without_detach(tensor, start, goal):
     return None, float('inf')
 
 
-def dijkstra_on_nparray_with_array(tensor, start, goal, ):
+def dijkstra_on_nparray_with_array(tensor, start, goal):
+    """
+    Summary of dijkstra_on_array_with_array: Instead of performing Dijkstra's Algorithm on an
+    actual graph, we will emulate a graph. In practice this means not actually creating any nodes or edges. The
+    weight of the edges to each neighbour are given by the tensor which we computed previously. The neighbour of a
+    current node are simple the nodes to its left, right, up and down direction. Special edge cases may apply to the
+    edges of the environment. An array is used for storing already visited nodes, and we perform the lookup of the
+    values on an array.
+
+    Args:
+        tensor (torch.Tensor): 2D Tensor of the potential field value function.
+        start (int, int): x and y coordinate of starting position.
+        goal (int, int): y and y position of goal position.
+
+    Returns:
+        (list, cost): Will the return the path in a list of tuples corresponding to the x and y value of the path
+        planning problem from starting coordinates to goal coordinates.
+    """
+
     np_array = tensor.detach().numpy()
     lookup_array = np.full((3, tensor.size(0), tensor.size(1)), -1)
     lookup_array[0, start[1], start[0]] = 0
@@ -309,7 +389,7 @@ def dijkstra_on_nparray_with_array(tensor, start, goal, ):
         if coordinate_tuple == goal:
             shortest_path = []
             while coordinate_tuple != (-1, -1):
-                if (np_array[coordinate_tuple[1], coordinate_tuple[0]] == torch.finfo(torch.float32).max):
+                if np_array[coordinate_tuple[1], coordinate_tuple[0]] == torch.finfo(torch.float32).max:
                     exit("No path to the goal that does not collide with obstacle!")
                 shortest_path.append(coordinate_tuple)
                 coordinate_tuple = (lookup_array[1, coordinate_tuple[1], coordinate_tuple[0]],
@@ -335,6 +415,24 @@ def dijkstra_on_nparray_with_array(tensor, start, goal, ):
 
 
 def dijkstra_on_nparray_with_two_array(tensor, start, goal):
+    """
+    Summary of dijkstra_on_array_with_array: Instead of performing Dijkstra's Algorithm on an
+    actual graph, we will emulate a graph. In practice this means not actually creating any nodes or edges. The
+    weight of the edges to each neighbour are given by the tensor which we computed previously. The neighbour of a
+    current node are simple the nodes to its left, right, up and down direction. Special edge cases may apply to the
+    edges of the environment. Two arrays are used for storing already visited nodes, and we perform the lookup of the
+    values on an array.
+
+    Args:
+        tensor (torch.Tensor): 2D Tensor of the potential field value function.
+        start (int, int): x and y coordinate of starting position.
+        goal (int, int): y and y position of goal position.
+
+    Returns:
+        (list, cost): Will the return the path in a list of tuples corresponding to the x and y value of the path
+        planning problem from starting coordinates to goal coordinates.
+    """
+
     np_array = tensor.detach().numpy()
     cost_array = np.full((tensor.size(0), tensor.size(1)), -1)
     parent_array = np.full((2, tensor.size(0), tensor.size(1)), -1, dtype=np.int32)

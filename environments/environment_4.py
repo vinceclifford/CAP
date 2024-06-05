@@ -7,7 +7,7 @@ obstacle_1 = StaticPolygon([(100, 200), (125, 200), (125, 600), (600, 600), (600
 obstacle_2 = StaticPolygon([(175, 250), (600, 250), (600, 550), (175, 550)], 80, 3)
 obstacle_3 = StaticCircle(100, 100, 50, 3)
 obstacle_4 = StaticCircle(50, 140, 50, 3)
-obstacle_5 = StaticCircle(160, 220, 200, 4)
+obstacle_5 = StaticCircle(160, 220, 200, 4, no_interference=20)
 
 
 obstacles = [
