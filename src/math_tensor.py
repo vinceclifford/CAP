@@ -421,6 +421,9 @@ def fill_infinite_polygon_repulsive_field_value(obstacles, tensor, min_distance_
                     y_a = o.vertices[i][1]
                     y_b = o.vertices[i + 1][1] if (i + 1) != len(o.vertices) else o.vertices[0][1]
 
+                    """Got the idea of choosing the ray casting point and the conditions that must be checked from here:
+                    https://www.youtube.com/watch?v=RSXM9bgqxJM&t=271s 4:32"""
+
                     if (y < y_a) != (y < y_b):
                         if x_b - x_a == 0:
                             if x < x_a:
