@@ -10,7 +10,7 @@ from math_engine import calculate_potential_field_value_temperature
 from functools import partial
 import torch
 
-SCREEN_WIDTH = 445
+SCREEN_WIDTH = 500
 DELTA = 5
 STEP_SIZE = 1
 SCREEN_HEIGHT = 500
