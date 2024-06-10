@@ -2,7 +2,6 @@ import torch
 from classes.staticpolygon import StaticPolygon
 from classes.staticcircle import StaticCircle
 
-
 C_DOUBLE_PRIME = -0.001
 C = 100
 
@@ -298,52 +297,24 @@ def calculate_polygon_distance_tensor(obstacles, width, height):
     distance_to_minimum_vertex = torch.sqrt(distance_to_minimum_vertex)
     distance_to_minimum_vertex, _ = torch.min(distance_to_minimum_vertex, dim=3)
 
-    # Splitting them such that we can add fictive dimensions in order to extract a fourth dimension. We disregard the
+    # Filtering & Splitting them such that we can add fictive dimensions in order to extract a fourth dimension. We disregard the
     # last splice because it's emtpy. It keeps all the tensors that did not fit in the slices before. Because we do
     # exact slicing, this last "bucket" is not needed.
+    filtered_tensor = torch.where((i_s >= 0) & (i_s <= 1), distance_to_edge, distance_to_minimum_vertex)
+    split_filtered_tensor = filtered_tensor.tensor_split(chunk_slices_sum, dim=2)[:-1]
 
-    i_s_chunked = i_s.tensor_split(chunk_slices_sum, dim=2)[:-1]
-    distances_to_edge_chunked = distance_to_edge.tensor_split(chunk_slices_sum, dim=2)[:-1]
-    distances_to_vertex_chunked = distance_to_minimum_vertex.tensor_split(chunk_slices_sum, dim=2)[:-1]
-
-    i_s_to_be_intertwined = []
-    distances_edge_to_be_intertwined = []
-    distances_vertex_to_be_intertwined = []
+    to_be_intertwined = []
     for entry in chunk_slices:
         depth = max_edges_for_obstacle - entry
+        to_add = torch.full((split_filtered_tensor[0].size(0), split_filtered_tensor[0].size(1), depth),
+                            torch.finfo(torch.float32).max)
 
-        # The fictive dimensions should not be considered while evaluating the distance to each obstacle. Therefore,
-        # when we take the minimum over all distances to each vertex, these values should be disregarded. This is
-        # achieved by setting the distance to the fictive entry to zero. The distance of infinity is stored in the
-        # distance_to_vertex_add tensor. So that masking works correctly, the filer value, i, must be set to a value in
-        # the range [0, 1]. We simply set it to 1.
+        to_be_intertwined.append(to_add)
 
-        i_to_add = torch.full((i_s_chunked[0].size(0), i_s_chunked[0].size(1), depth), 1)
-        distances_to_edge_add = torch.full((distances_to_edge_chunked[0].size(0), distances_to_edge_chunked[0].size(1), depth),
-                                      torch.finfo(torch.float32).max)
-        distances_to_vertex_add = torch.full((distances_to_vertex_chunked[0].size(0), distances_to_vertex_chunked[0].size(1), depth),
-                                             torch.finfo(torch.float32).max)
+    result = torch.cat([torch.cat(tensors, dim=2) for tensors in zip(split_filtered_tensor, to_be_intertwined)], dim=2)
+    result = result.view(result.size(0), result.size(1), len(obstacles), -1)
+    min_distance_tensor, _ = torch.min(result, dim=3)
 
-        i_s_to_be_intertwined.append(i_to_add)
-        distances_edge_to_be_intertwined.append(distances_to_edge_add)
-        distances_vertex_to_be_intertwined.append(distances_to_vertex_add)
-
-    i_s_result = torch.cat([torch.cat(tensors, dim=2) for tensors in zip(i_s_chunked, i_s_to_be_intertwined)], dim=2)
-    i_s_reshaped = i_s_result.view(i_s_result.size(0), i_s_result.size(1), len(obstacles), -1)
-
-    distances_to_edge_result = torch.cat(
-        [torch.cat(tensors, dim=2) for tensors in zip(distances_to_edge_chunked, distances_edge_to_be_intertwined)], dim=2)
-    distances_edge_reshaped = distances_to_edge_result.view(distances_to_edge_result.size(0), distances_to_edge_result.size(1), len(obstacles), -1)
-
-    distances_to_vertex_result = torch.cat(
-        [torch.cat(tensors, dim=2) for tensors in zip(distances_to_vertex_chunked, distances_vertex_to_be_intertwined)], dim=2
-    )
-    distances_vertex_reshaped = distances_to_vertex_result.view(distances_to_vertex_result.size(0), distances_to_vertex_result.size(1), len(obstacles), -1)
-
-    # We filter depending on the i-value
-    filtered_tensor = torch.where((i_s_reshaped >= 0) & (i_s_reshaped <= 1), distances_edge_reshaped, distances_vertex_reshaped)
-
-    min_distance_tensor, _ = torch.min(filtered_tensor, dim=3)
     return min_distance_tensor
 
 
