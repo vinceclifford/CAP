@@ -66,4 +66,4 @@ def random_medium_graph():
 
 
 if __name__ == "__main__":
-    random_medium_graph()
+    small_graph()

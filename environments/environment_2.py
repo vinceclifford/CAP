@@ -14,3 +14,6 @@ obstacles = [
     obstacle_1, 
     obstacle_2
 ]
+
+SCREEN_WIDTH = 800
+SCREEN_HEIGHT = 640

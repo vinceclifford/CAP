@@ -17,3 +17,6 @@ obstacles = [obstacle_1, obstacle_2, obstacle_3, obstacle_4, obstacle_5, obstacl
 
 agent = Robot(50, 450)
 target = StaticCircle(470, 30, 30, 3)
+
+SCREEN_WIDTH = 500
+SCREEN_HEIGHT = 500

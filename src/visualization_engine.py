@@ -10,10 +10,8 @@ from math_engine import calculate_potential_field_value_temperature
 from functools import partial
 import torch
 
-SCREEN_WIDTH = 500
 DELTA = 5
 STEP_SIZE = 1
-SCREEN_HEIGHT = 500
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
@@ -53,7 +51,7 @@ def draw_obstacles(screen, obstacles, color):
                 pygame.draw.polygon(screen, PURPLE, entry.vertices, width=0)
 
 
-def visualization_heat_map(alpha, temp, target, obstacles):
+def visualization_heat_map(alpha, temp, target, obstacles, SCREEN_WIDTH, SCREEN_HEIGHT):
     """
     Summary of visualization_heat_map(): Will display a heat map of the potential field value function.
 
@@ -113,7 +111,7 @@ def visualization_heat_map_tensor(tensor):
     plt.show()
 
 
-def visualization_3d_function(alpha, temp, target, obstacles):
+def visualization_3d_function(alpha, temp, target, obstacles, SCREEN_WIDTH, SCREEN_HEIGHT):
     """
     Summary of visualization_3d_function: Will create a 3D function. This visualized function will receive two
     inputs, the coordinates of the robot, and will calculate the potential field value.
@@ -162,7 +160,7 @@ def visualizing_dijkstra(screen, path_points):
     pygame.display.flip()
 
 
-def check_validity_of_obstacles(obstacles):
+def check_validity_of_obstacles(obstacles, SCREEN_WIDTH, SCREEN_HEIGHT):
     """
     Summary of check_validity_of_obstacles(): Will check if the given obstacles are valid.
 
