@@ -12,9 +12,6 @@ class Node:
     def add_neighbours(self, neighbor, weight):
         self.neighbors[neighbor] = weight
 
-    def add_neighbours(self, dict):
-        self.neighbors.update(dict)
-
     def __lt__(self, other):
         """
         Needed for completeness in the heap for dijkstras algorithm. Else we might get an exception
