@@ -3,7 +3,7 @@ import time
 from dijkstra import dijkstra_on_nparray_with_dictionary_without_detach
 from visualization_engine import draw_robot, draw_obstacles, visualizing_dijkstra, check_validity_of_obstacles, \
     SCREEN_WIDTH, SCREEN_HEIGHT, GREY, BLACK, RED, PURPLE, visualization_heat_map_tensor
-from environments.environment_17 import obstacles, agent, target
+from environments.environment_1 import obstacles, agent, target
 from math_tensor import calculate_total_repulsive_field_value
 
 
