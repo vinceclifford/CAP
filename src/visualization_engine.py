@@ -3,9 +3,9 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-from classes.robot import Robot
-from classes.staticcircle import StaticCircle
-from classes.staticpolygon import StaticPolygon
+from robot import Robot
+from staticcircle import StaticCircle
+from staticpolygon import StaticPolygon
 from math_engine import calculate_potential_field_value_temperature
 from functools import partial
 import torch
@@ -41,9 +41,10 @@ def draw_obstacles(screen, obstacles, color):
         Same as in the function draw_robot apart from robot. obstacles are of type list.
     """
 
+    print("Printing")
     for entry in obstacles:
         if isinstance(entry, StaticCircle):
-            pygame.draw.circle(screen, color, (int(entry.vector[0]), int(entry.vector[1])), entry.no_interference)
+            pygame.draw.circle(screen, color, (int(entry.vector[0]), int(entry.vector[1])), entry.radius)
         elif isinstance(entry, StaticPolygon):
             if len(entry.vertices) == 2:
                 pygame.draw.line(screen, PURPLE, entry.vertices[0], entry.vertices[1], width=2)

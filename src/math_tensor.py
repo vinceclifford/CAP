@@ -1,6 +1,6 @@
 import torch
-from classes.staticpolygon import StaticPolygon
-from classes.staticcircle import StaticCircle
+from staticpolygon import StaticPolygon
+from staticcircle import StaticCircle
 
 C_DOUBLE_PRIME = -0.001
 C = 100

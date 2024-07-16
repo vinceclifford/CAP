@@ -27,7 +27,6 @@ def process_key_event(zed, key, directory_path):
 
 
 def get_images(): 
-
     cwd = os.getcwd()
     directory_path = os.path.join(cwd, "calibration_images")
     os.makedirs(directory_path, exist_ok=True)
@@ -52,7 +51,6 @@ def get_images():
 
     image_zed = sl.Mat(image_size.width, image_size.height, sl.MAT_TYPE.U8_C4)
 
-    print(directory_path)
     pressed_key = ' '
     while pressed_key != ord('q'): 
         err = zed.grab(runtime)
@@ -70,4 +68,3 @@ def get_images():
 
     return directory_path
 
-get_images()

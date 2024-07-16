@@ -1,7 +1,7 @@
 import heapq
 import torch
 import numpy as np
-from src.construct_graph import construct_graph_from_tensor
+from construct_graph import construct_graph_from_tensor
 
 
 def dijkstra(start, end):
