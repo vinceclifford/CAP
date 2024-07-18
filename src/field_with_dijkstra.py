@@ -1,8 +1,8 @@
-from classes.node import Node
-from classes.robot import Robot
-from classes.staticcircle import StaticCircle
-from math_engine import calculate_potential_field_value_temperature
-from dijkstra import dijkstra
+from src.node import Node
+from src.robot import Robot
+from src.staticcircle import StaticCircle
+from src.math_engine import calculate_potential_field_value_temperature
+from src.dijkstra import dijkstra
 from tqdm import tqdm
 
 

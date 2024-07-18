@@ -3,10 +3,10 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-from classes.robot import Robot
-from classes.staticcircle import StaticCircle
-from classes.staticpolygon import StaticPolygon
-from math_engine import calculate_potential_field_value_temperature
+from src.robot import Robot
+from src.staticcircle import StaticCircle
+from src.staticpolygon import StaticPolygon
+from src.math_engine import calculate_potential_field_value_temperature
 from functools import partial
 import torch
 

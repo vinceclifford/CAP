@@ -1,6 +1,5 @@
 import numpy as np
 
-
 class StaticCircle:
     def __init__(self, x, y, radius, attraction, no_interference=10) -> None:
         self.vector = (x, y)

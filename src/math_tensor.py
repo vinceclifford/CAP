@@ -1,12 +1,13 @@
 import torch
-from classes.staticpolygon import StaticPolygon
-from classes.staticcircle import StaticCircle
+from src.staticpolygon import StaticPolygon
+from src.staticcircle import StaticCircle
 
 C_DOUBLE_PRIME = -0.001
 C = 100
 
 
-def calculate_total_repulsive_field_value(obstacles, target, width, height, alpha=1, temp=1):
+def calculate_total_repulsive_field_value(obstacles, target, width, height, alpha=1, temp=1,
+                                          attraction_repulsive_tensor=None):
     """
     Summary of create_total_repulsive_field_value(): Will calculate the total repulsive field value for
     the given obstacles. Will call individual repulsive field value functions for polygons and circles as well as the
@@ -40,7 +41,8 @@ def calculate_total_repulsive_field_value(obstacles, target, width, height, alph
     if len(polygon_obstacle_list) != 0:
         polygon_distance_tensor = calculate_polygon_distance_tensor(polygon_obstacle_list, width, height)
 
-    attraction_repulsive_tensor = calculate_attraction_field_value_tensor(target, width, height, alpha, temp)
+    if attraction_repulsive_tensor is not None:
+        attraction_repulsive_tensor = calculate_attraction_field_value_tensor(target, width, height, alpha, temp)
 
     if len(circle_obstacle_list) != 0:
         attraction_repulsive_tensor += calculate_repulsive_field_value(circle_distance_tensor, circle_obstacle_list)
@@ -337,10 +339,10 @@ def fill_infinite_circle_repulsive_field_value(obstacles, tensor):
     for obstacle in obstacles:
         x_min = max(obstacle.vector[0] - obstacle.no_interference, 0)
         x_max = min(tensor.size(1), obstacle.vector[0] + obstacle.no_interference)
-        for x in range(x_min, x_max + 1):
+        for x in range(x_min, x_max):
             y_min = max(obstacle.vector[1] - obstacle.no_interference, 0)
             y_max = min(tensor.size(0), obstacle.vector[1] + obstacle.no_interference)
-            for y in range(y_min, y_max + 1):
+            for y in range(y_min, y_max):
                 diff = (torch.tensor(obstacle.vector) - torch.tensor((x, y))).to(dtype=torch.float)
 
                 # Use Euclidean norm to determine whether we need to set the repulsive field value to infinity

@@ -1,6 +1,6 @@
-from classes.staticpolygon import StaticPolygon
-from classes.staticcircle import StaticCircle
-from classes.robot import Robot
+from src.staticpolygon import StaticPolygon
+from src.staticcircle import StaticCircle
+from src.robot import Robot
 
 obstacle_1 = StaticPolygon([(360, 375), (360, 410), (425, 410), (425, 375)], 60, 3)
 obstacle_2 = StaticPolygon([(380, 275), (380, 340), (420, 340), (420, 275)], 60, 3)

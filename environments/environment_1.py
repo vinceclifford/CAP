@@ -1,5 +1,5 @@
-from classes.staticcircle import StaticCircle
-from classes.robot import Robot
+from src.staticcircle import StaticCircle
+from src.robot import Robot
 
 obstacle_1 = StaticCircle(200, 200, 130, 3)
 obstacle_2 = StaticCircle(120, 140, 80, 3)

@@ -1,5 +1,5 @@
-from classes.staticcircle import StaticCircle
-from classes.robot import Robot
+from src.staticcircle import StaticCircle
+from src.robot import Robot
 
 # Test case if we are trapped. We should not find a path to the patient. 
 

@@ -1,8 +1,8 @@
 #Test für Wanddicke testen
 
-from classes.staticcircle import StaticCircle
-from classes.staticpolygon import StaticPolygon
-from classes.robot import Robot
+from src.staticcircle import StaticCircle
+from src.staticpolygon import StaticPolygon
+from src.robot import Robot
 
 obstacle_1 = StaticCircle(200, 1, 10, 3)
 obstacle_2 = StaticCircle(200, 2, 10, 3)

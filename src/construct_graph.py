@@ -1,4 +1,4 @@
-from classes.node import Node
+from src.node import Node
 
 
 def construct_graph_from_tensor(tensor, start, goal, width, height):
