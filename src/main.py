@@ -2,6 +2,7 @@ import pygame
 import time
 import shutil
 import cv2
+import math
 from src.dijkstra import dijkstra_on_nparray_with_dictionary_without_detach
 from visualization_engine import draw_robot, draw_obstacles, visualizing_dijkstra, check_validity_of_obstacles, \
     GREY, BLACK, RED, PURPLE, visualization_heat_map_tensor
@@ -47,6 +48,27 @@ def main_pathplanning():
                     done = True
 
 
+def update_cache(obstacle_classes_map, other_map):
+    for key, coordinates in other_map.items():
+        obstacle_classes_map[key] = (StaticCircle(coordinates[0], coordinates[1], 30, 3, 25), 1)
+
+    difference_set = obstacle_classes_map.keys() - other_map.keys()
+
+    for key in difference_set:
+        circle, last_seen = obstacle_classes_map[key]
+        if last_seen < 2 ** 8:
+            obstacle_classes_map[key] = circle, last_seen << 1
+        else:
+            del obstacle_classes_map[key]
+
+    obstacle_classes_list = []
+    for key, value in obstacle_classes_map.items():
+        circle_object, lifetime = value
+        obstacle_classes_list.append(circle_object)
+
+    return obstacle_classes_list
+
+
 def main_realtime_detection(width, height):
     pygame.init()
     pygame.display.set_caption("Environment")
@@ -64,7 +86,13 @@ def main_realtime_detection(width, height):
     image_ocv = cv2.cvtColor(image_ocv, cv2.COLOR_RGBA2RGB)
     target = None
     robot = None
-    obstacles = []
+
+    # obstacles maps id to coordinates in the current frame. obstacle_classes_map maps ids to StaticCircle as well as last
+    # time seen.
+    # obstacles: int -> (int,int)
+    # obstacle_classes_map: int -> (StaticCircle, int)
+    obstacles = {}
+    obstacle_classes_map = {}
     while target is None and robot is None:
         obstacles, r, t, output = \
             coordinate_estimation_first(image_ocv, ARUCO_DICT[aruco_type], camera_matrix, distortion)
@@ -72,9 +100,7 @@ def main_realtime_detection(width, height):
         robot = r if robot is None else robot
         print(f"Fetching locations: Robot: {robot}, target{target}")
 
-    obstacle_classes = []
-    for obstacle in obstacles:
-        obstacle_classes.append(StaticCircle(obstacle[0],   obstacle[1], 30, 3, 25))
+    obstacle_classes_list = update_cache(obstacle_classes_map, obstacles)
 
     target_object = StaticCircle(target[0], target[1], 30, 3)
     robot_object = Robot(robot[0], robot[1])
@@ -82,7 +108,7 @@ def main_realtime_detection(width, height):
     print("Came back from attraction tensor calculation")
 
     tensor = (
-        calculate_total_repulsive_field_value(obstacle_classes, target_object, height, width,
+        calculate_total_repulsive_field_value(obstacle_classes_list, target_object, height, width,
                                               attraction_repulsive_tensor=attraction_tensor))
 
     path_orig, _ = dijkstra_on_nparray_with_dictionary_without_detach(tensor, robot_object.vector, target_object.vector)
@@ -106,14 +132,13 @@ def main_realtime_detection(width, height):
 
         obstacles_iteration, robot, output = (
             coordinate_estimation_continous(image_ocv, ARUCO_DICT[aruco_type], camera_matrix, distortion))
-        obstacles_classes_iteration = []
-        for obstacle in obstacles_iteration:
-            obstacles_classes_iteration.append(StaticCircle(obstacle[0], obstacle[1], 30, 3, 25))
+
+        obstacle_classes_list = update_cache(obstacle_classes_map, obstacles_iteration)
 
         if robot is not None:
             robot_object = Robot(robot[0], robot[1])
         tensor_iteration = (
-            calculate_total_repulsive_field_value(obstacles_classes_iteration, target_object, height, width,
+            calculate_total_repulsive_field_value(obstacle_classes_list, target_object, height, width,
                                                   attraction_repulsive_tensor=attraction_tensor))
 
         path_iteration, _ = dijkstra_on_nparray_with_dictionary_without_detach(tensor_iteration, robot_object.vector,
@@ -125,7 +150,7 @@ def main_realtime_detection(width, height):
         first = second
         screen.fill(GREY)
         pygame.draw.lines(screen, BLACK, False, path_iteration, 2)
-        draw_obstacles(screen, obstacles_classes_iteration, PURPLE)
+        draw_obstacles(screen, obstacle_classes_list, PURPLE)
         draw_robot(screen, robot_object, BLACK, 5)
         draw_robot(screen, target_object, RED, 10)
 

@@ -17,7 +17,7 @@ def coordinate_estimation_continous(frame, aruco_dict_type, matrix_coefficients,
 
     corners, ids, _ = detector.detectMarkers(gray_image)
     robot = None
-    obstacles = []
+    obstacles = {}
 
     if ids is not None:
         # Draw the detected markers on the frame
@@ -58,7 +58,7 @@ def coordinate_estimation_continous(frame, aruco_dict_type, matrix_coefficients,
                 if key == 5:
                     robot = int(point_or[0][0][0] / 2), int(point_or[0][0][1] / 2)
                 else:
-                    obstacles.append((int(point_or[0][0][0] / 2), int(point_or[0][0][1] / 2)))
+                    obstacles[key] = (int(point_or[0][0][0] / 2), int(point_or[0][0][1] / 2))
 
     return obstacles, robot, frame
 
@@ -74,7 +74,7 @@ def coordinate_estimation_first(frame, aruco_dict_type, matrix_coefficients, dis
     corners, ids, _ = detector.detectMarkers(gray_image)
     target = None
     robot = None
-    obstacles = []
+    obstacles = {}
 
     if ids is not None:
         # Draw the detected markers on the frame
@@ -116,6 +116,6 @@ def coordinate_estimation_first(frame, aruco_dict_type, matrix_coefficients, dis
                 elif key == 5:
                     robot = (int(point_or[0][0][0] / 2), int(point_or[0][0][1] / 2))
                 else:
-                    obstacles.append((int(point_or[0][0][0] / 2), int(point_or[0][0][1] / 2)))
+                    obstacles[key] = (int(point_or[0][0][0] / 2), int(point_or[0][0][1] / 2))
 
     return obstacles, robot, target, frame
