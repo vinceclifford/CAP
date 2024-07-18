@@ -2,7 +2,6 @@ import pygame
 import time
 import shutil
 import cv2
-import math
 from src.dijkstra import dijkstra_on_nparray_with_dictionary_without_detach
 from visualization_engine import draw_robot, draw_obstacles, visualizing_dijkstra, check_validity_of_obstacles, \
     GREY, BLACK, RED, PURPLE, visualization_heat_map_tensor
@@ -48,7 +47,7 @@ def main_pathplanning():
                     done = True
 
 
-def update_cache(obstacle_classes_map, other_map):
+def update_cache(obstacle_classes_map, other_map, frame_number):
     for key, coordinates in other_map.items():
         obstacle_classes_map[key] = (StaticCircle(coordinates[0], coordinates[1], 30, 3, 25), 1)
 
@@ -56,7 +55,7 @@ def update_cache(obstacle_classes_map, other_map):
 
     for key in difference_set:
         circle, last_seen = obstacle_classes_map[key]
-        if last_seen < 2 ** 8:
+        if last_seen < frame_number:
             obstacle_classes_map[key] = circle, last_seen << 1
         else:
             del obstacle_classes_map[key]
@@ -69,7 +68,10 @@ def update_cache(obstacle_classes_map, other_map):
     return obstacle_classes_list
 
 
-def main_realtime_detection(width, height):
+def main_realtime_detection(width, height, frame_history):
+    if frame_history > 32:
+        exit("An invalid frame history value was given")
+    frame_number = 2 ** frame_history
     pygame.init()
     pygame.display.set_caption("Environment")
     screen = pygame.display.set_mode((height + 5, width + 5))
@@ -100,7 +102,7 @@ def main_realtime_detection(width, height):
         robot = r if robot is None else robot
         print(f"Fetching locations: Robot: {robot}, target{target}")
 
-    obstacle_classes_list = update_cache(obstacle_classes_map, obstacles)
+    obstacle_classes_list = update_cache(obstacle_classes_map, obstacles, frame_number)
 
     target_object = StaticCircle(target[0], target[1], 30, 3)
     robot_object = Robot(robot[0], robot[1])
@@ -133,7 +135,7 @@ def main_realtime_detection(width, height):
         obstacles_iteration, robot, output = (
             coordinate_estimation_continous(image_ocv, ARUCO_DICT[aruco_type], camera_matrix, distortion))
 
-        obstacle_classes_list = update_cache(obstacle_classes_map, obstacles_iteration)
+        obstacle_classes_list = update_cache(obstacle_classes_map, obstacles_iteration, frame_number)
 
         if robot is not None:
             robot_object = Robot(robot[0], robot[1])
@@ -144,7 +146,6 @@ def main_realtime_detection(width, height):
         path_iteration, _ = dijkstra_on_nparray_with_dictionary_without_detach(tensor_iteration, robot_object.vector,
                                                                                target_object.vector)
 
-        print(path_orig == path_iteration)
         second = time.time()
         print(f"It took {first - second} seconds")
         first = second
@@ -235,4 +236,4 @@ def main_realtime_detection_without_visualization(width, height):
 
 if __name__ == "__main__":
     print(cv2.__version__)
-    main_realtime_detection(int(1455 / 2), int(1155 / 2))
+    main_realtime_detection(int(1455 / 2), int(1155 / 2), 8)
