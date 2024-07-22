@@ -12,7 +12,8 @@ from src.camera_calibration import calibrate_camera
 from src.get_calibration_images import get_images
 from src.staticcircle import StaticCircle
 from src.robot import Robot
-
+import numpy as np
+from statsmodels.nonparametric.smoothers_lowess import lowess
 
 def main_pathplanning():
     check_validity_of_obstacles(obstacles, SCREEN_WIDTH, SCREEN_HEIGHT)
@@ -89,18 +90,20 @@ def main_realtime_detection(width, height, frame_history):
     target = None
     robot = None
 
-    # obstacles maps id to coordinates in the current frame. obstacle_classes_map maps ids to StaticCircle as well as last
-    # time seen.
-    # obstacles: int -> (int,int)
-    # obstacle_classes_map: int -> (StaticCircle, int)
+    # obstacles maps id to coordinates in the current frame. obstacle_classes_map maps ids to StaticCircle as well as
+    # last time seen. obstacles: int -> (int,int) obstacle_classes_map: int -> (StaticCircle, int)
     obstacles = {}
     obstacle_classes_map = {}
     while target is None and robot is None:
+        ret, image_ocv = cam.read()
+        image_ocv = cv2.cvtColor(image_ocv, cv2.COLOR_RGBA2RGB)
         obstacles, r, t, output = \
             coordinate_estimation_first(image_ocv, ARUCO_DICT[aruco_type], camera_matrix, distortion)
-        target = t if target is None else target
-        robot = r if robot is None else robot
-        print(f"Fetching locations: Robot: {robot}, target{target}")
+        if target is None:
+            target = t
+        if robot is None:
+            robot = r
+        print(f"Fetching locations: Robot: {robot}, target {target}")
 
     obstacle_classes_list = update_cache(obstacle_classes_map, obstacles, frame_number)
 
@@ -146,6 +149,7 @@ def main_realtime_detection(width, height, frame_history):
         path_iteration, _ = dijkstra_on_nparray_with_dictionary_without_detach(tensor_iteration, robot_object.vector,
                                                                                target_object.vector)
 
+        path_iteration = moving_average_smooth(path_iteration,25)
         second = time.time()
         print(f"It took {first - second} seconds")
         first = second
@@ -232,6 +236,26 @@ def main_realtime_detection_without_visualization(width, height):
 
     cam.release()
     cv2.destroyAllWindows()
+
+
+def moving_average_smooth(path, window_size):
+    smoothed_path = []
+
+    for i in range(len(path)):
+        if i < window_size // 2:
+            window = path[0:i + window_size // 2 + 1]
+        elif i >= len(path) - window_size // 2:
+            window = path[i - window_size // 2:len(path)]
+        else:
+            window = path[i - window_size // 2:i + window_size // 2 + 1]
+
+        x_smoothed = sum(pt[0] for pt in window) / len(window)
+        y_smoothed = sum(pt[1] for pt in window) / len(window)
+
+        smoothed_path.append((x_smoothed, y_smoothed))
+
+    return smoothed_path
+
 
 
 if __name__ == "__main__":
