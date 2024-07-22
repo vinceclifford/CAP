@@ -6,7 +6,7 @@ ARUCO_DICT = {
 }
 
 
-def coordinate_estimation_continous(frame, aruco_dict_type, matrix_coefficients, distortion_coefficients):
+def coordinate_estimation_continous(frame, aruco_dict_type, matrix_coefficients, distortion_coefficients, scaling_factor):
     # id number 4 and 5 represent the goal and robot respectively
 
     distance_map = {}
@@ -43,7 +43,7 @@ def coordinate_estimation_continous(frame, aruco_dict_type, matrix_coefficients,
         if all(id in distance_map for id in required_ids):
 
             camera_coordinates = np.array([distance_map[id] for id in required_ids], dtype='float32')
-            real_world_coords = np.array([[0, 0], [1155, 0], [1155, 1415], [0, 1415]], dtype='float32')
+            real_world_coords = np.array([[1415, 0], [1415, 1155], [0, 1155], [0, 0]], dtype='float32')
 
             # Compute the homography matrix
             H, status = cv2.findHomography(camera_coordinates, real_world_coords)
@@ -56,14 +56,14 @@ def coordinate_estimation_continous(frame, aruco_dict_type, matrix_coefficients,
                 point_camera = np.array([distance_map[key]], dtype='float32').reshape(-1, 1, 2)
                 point_or = cv2.perspectiveTransform(point_camera, H)
                 if key == 5:
-                    robot = int(point_or[0][0][0] / 2), int(point_or[0][0][1] / 2)
+                    robot = int(point_or[0][0][0] * scaling_factor), int(point_or[0][0][1] * scaling_factor)
                 else:
-                    obstacles[key] = (int(point_or[0][0][0] / 2), int(point_or[0][0][1] / 2))
+                    obstacles[key] = (int(point_or[0][0][0] * scaling_factor), int(point_or[0][0][1] * scaling_factor))
 
     return obstacles, robot, frame
 
 
-def coordinate_estimation_first(frame, aruco_dict_type, matrix_coefficients, distortion_coefficients):
+def coordinate_estimation_first(frame, aruco_dict_type, matrix_coefficients, distortion_coefficients, scaling_factor):
     # id number 4 and 5 represent the goal and robot respectively
     distance_map = {}
     gray_image = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
@@ -100,7 +100,7 @@ def coordinate_estimation_first(frame, aruco_dict_type, matrix_coefficients, dis
         if all(id in distance_map for id in required_ids):
 
             camera_coordinates = np.array([distance_map[id] for id in required_ids], dtype='float32')
-            real_world_coords = np.array([[0, 0], [1155, 0], [1155, 1415], [0, 1415]], dtype='float32')
+            real_world_coords = np.array([[1415, 0], [1415, 1155], [0, 1155], [0, 0]], dtype='float32')
 
             # Compute the homography matrix
             H, status = cv2.findHomography(camera_coordinates, real_world_coords)
@@ -112,10 +112,10 @@ def coordinate_estimation_first(frame, aruco_dict_type, matrix_coefficients, dis
                 point_camera = np.array([distance_map[key]], dtype='float32').reshape(-1, 1, 2)
                 point_or = cv2.perspectiveTransform(point_camera, H)
                 if key == 4:
-                    target = (int(point_or[0][0][0] / 2), int(point_or[0][0][1] / 2))
+                    target = (int(point_or[0][0][0] * scaling_factor), int(point_or[0][0][1] * scaling_factor))
                 elif key == 5:
-                    robot = (int(point_or[0][0][0] / 2), int(point_or[0][0][1] / 2))
+                    robot = (int(point_or[0][0][0] * scaling_factor), int(point_or[0][0][1] * scaling_factor))
                 else:
-                    obstacles[key] = (int(point_or[0][0][0] / 2), int(point_or[0][0][1] / 2))
+                    obstacles[key] = (int(point_or[0][0][0] * scaling_factor), int(point_or[0][0][1] * scaling_factor))
 
     return obstacles, robot, target, frame

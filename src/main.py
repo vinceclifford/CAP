@@ -12,8 +12,7 @@ from src.camera_calibration import calibrate_camera
 from src.get_calibration_images import get_images
 from src.staticcircle import StaticCircle
 from src.robot import Robot
-import numpy as np
-from statsmodels.nonparametric.smoothers_lowess import lowess
+
 
 def main_pathplanning():
     check_validity_of_obstacles(obstacles, SCREEN_WIDTH, SCREEN_HEIGHT)
@@ -69,7 +68,7 @@ def update_cache(obstacle_classes_map, other_map, frame_number):
     return obstacle_classes_list
 
 
-def main_realtime_detection(width, height, frame_history):
+def main_realtime_detection(width, height, frame_history, scaling_factor):
     if frame_history > 32:
         exit("An invalid frame history value was given")
     frame_number = 2 ** frame_history
@@ -98,7 +97,7 @@ def main_realtime_detection(width, height, frame_history):
         ret, image_ocv = cam.read()
         image_ocv = cv2.cvtColor(image_ocv, cv2.COLOR_RGBA2RGB)
         obstacles, r, t, output = \
-            coordinate_estimation_first(image_ocv, ARUCO_DICT[aruco_type], camera_matrix, distortion)
+            coordinate_estimation_first(image_ocv, ARUCO_DICT[aruco_type], camera_matrix, distortion, scaling_factor)
         if target is None:
             target = t
         if robot is None:
@@ -136,7 +135,7 @@ def main_realtime_detection(width, height, frame_history):
         image_ocv = cv2.cvtColor(image_ocv, cv2.COLOR_RGBA2RGB)
 
         obstacles_iteration, robot, output = (
-            coordinate_estimation_continous(image_ocv, ARUCO_DICT[aruco_type], camera_matrix, distortion))
+            coordinate_estimation_continous(image_ocv, ARUCO_DICT[aruco_type], camera_matrix, distortion, scaling_factor))
 
         obstacle_classes_list = update_cache(obstacle_classes_map, obstacles_iteration, frame_number)
 
@@ -184,7 +183,7 @@ def main_realtime_detection_without_visualization(width, height):
     obstacles = []
     while target is None and robot is None:
         obstacles, r, t, output = \
-            coordinate_estimation_first(image_ocv, ARUCO_DICT[aruco_type], camera_matrix, distortion)
+            coordinate_estimation_first(image_ocv, ARUCO_DICT[aruco_type], camera_matrix, distortion, 4/5)
         target = t if target is None else target
         robot = r if robot is None else robot
 
@@ -211,7 +210,7 @@ def main_realtime_detection_without_visualization(width, height):
         image_ocv = cv2.cvtColor(image_ocv, cv2.COLOR_RGBA2RGB)
 
         obstacles_iteration, robot, output = (
-            coordinate_estimation_continous(image_ocv, ARUCO_DICT[aruco_type], camera_matrix, distortion))
+            coordinate_estimation_continous(image_ocv, ARUCO_DICT[aruco_type], camera_matrix, distortion, 4/5))
         obstacles_classes_iteration = []
         for obstacle in obstacles_iteration:
             obstacles_classes_iteration.append(StaticCircle(obstacle[0], obstacle[1], 30, 3, 25))
@@ -260,4 +259,5 @@ def moving_average_smooth(path, window_size):
 
 if __name__ == "__main__":
     print(cv2.__version__)
-    main_realtime_detection(int(1455 / 2), int(1155 / 2), 8)
+    scaling_factor = 7/8
+    main_realtime_detection(int(1155 * scaling_factor), int(1455 * scaling_factor), 8, scaling_factor)
